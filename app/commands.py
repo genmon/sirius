@@ -1,0 +1,110 @@
+from .models import BridgeCommand
+from .models import DeviceCommand
+from .image_encoding import rle_image
+
+from .claiming import process_claim_code
+
+import struct
+from datetime import datetime
+import base64
+import json
+
+# device commands are
+# set_delivery_and_print
+# set_delivery
+# set_delivery_and_print_no_face
+# set_delivery_no_face
+# set_personality
+# set_quip
+# firmware_update
+
+TEST_FILE_ID = 1
+TEST_PNG_FN = '/Users/matt/Documents/dev-unversioned/sirius2/iconrethink.png'
+
+# some constants
+DEVICE_TYPE = '\x01' # rBergCloud::Barringer::DEVICE_TYPE in weminuche-server
+COMMAND_ID = {
+    'set_delivery_and_print': 0x0001
+}
+
+def add_device_encryption_key():
+    bridge_address = "000d6f00026c6edd"
+    device_address = "000d6f000273ce0b"
+    #claim_code = "6xwh-441j-8115-zyrh"
+    claim_code = "ps2f-gsjg-8wsq-7hc4"
+    _, encryption_key = process_claim_code(claim_code)
+    
+    payload = {
+        'name': 'add_device_encryption_key',
+        'params': {
+            'device_address': device_address,
+            'encryption_key': encryption_key
+        }
+    }
+
+    command = BridgeCommand(
+        bridge_address='000d6f0001b397c3',
+        json_payload=json.dumps(payload),
+        timestamp=datetime.utcnow()
+    )
+    command.id = 1
+    return command   
+
+def set_delivery_and_print_payload(file_id, png_fn):
+    # file ID is a 32 bit ID which is returned as a did_print event
+    # three parts:
+    # - command header
+    #   - >cxHL
+    # - payload header
+    #   - length >L
+    # - payload
+    #   - len(header plus image) + 1 >L
+    #   - pad x
+    #   - encode_header_region
+    #       - pad x
+    #       - length of following >L
+    #       - append_printer_control_header (a bunch o bytes)
+    #       - UC05 controls <cccccccc
+    #   - encode_image_region
+    
+    # device type >c, reserved byte >c,
+    # command_name >H (short), file_id >L (long)
+    command_header = struct.pack(">cxHL", '\x01', 1, 1)
+
+    # get the encoded image now, because we'll need the data later
+    pixel_count, encoded_image = rle_image(png_fn)
+
+    # payload header region
+    printer_control = struct.pack("<ccccccccccccc",
+        '\x1d', '\x73', '\x03', '\xe8', # max printer speed
+        '\x1d', '\x61', '\xd0', # printer acceleration
+        '\x1d', '\x2f', '\x0f', # peak current
+        '\x1d', '\x44', '\x80' # max intensity
+        )
+    printer_byte_count = pixel_count / 8
+    n3 = printer_byte_count / 65536
+    n3_remainder = printer_byte_count % 65536
+    n2 = n3_remainder / 256
+    n1 = n3_remainder % 256
+    printer_data = struct.pack("<cccccxxc",
+        '\x1b', '\x2a', chr(n1), chr(n2), chr(n3), chr(48))
+    header_region = struct.pack(">xL", len(printer_control) + len(printer_data))
+    header_region += printer_control + printer_data
+    
+    # payload including the header
+    payload = struct.pack(">Lx", len(header_region) + len(encoded_image) + 1)
+    payload += header_region + encoded_image
+    
+    entire_payload = command_header + struct.pack(">L", len(payload)) + payload
+    
+    return entire_payload
+    
+def set_delivery_and_print():
+    command = DeviceCommand(
+        device_address='000d6f000273ce0b',
+        binary_payload=base64.b64encode(set_delivery_and_print_payload(TEST_FILE_ID, TEST_PNG_FN)),
+        state='ready',
+        deliver_at=datetime.utcnow()
+    )
+    command.id = 1
+    return command
