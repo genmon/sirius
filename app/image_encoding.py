@@ -72,7 +72,7 @@ def rle_image(image_fn):
     # encode using our custom encoding
     lengths = [g[1] for g in groups]
     x = bytearray(rle(lengths))
-    output = struct.pack(">%ds" % len(x), str(x))
+    output = struct.pack("<%ds" % len(x), str(x))
 
     # return (number of pixels, output)
     return len(pixels), output
