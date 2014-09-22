@@ -39,6 +39,7 @@ def create_app(config_name):
     def echo_socket(ws):
         print "here"
         done_once = False
+        counting = 0
         while True: 
             message = ws.receive()            
             pprint(message)
@@ -51,15 +52,19 @@ def create_app(config_name):
                     print "==> encryption_key_required"
                     j = commands.add_device_encryption_key().to_json()
                     ws.send(j)
-                    gevent.sleep(0.5)
-                    print "===> %s" % j
-                    j = commands.set_delivery_and_print().to_json()
-                    ws.send(j)
-                if event['type'] == 'BridgeEvent' and done_once == False:
-                    j = commands.set_delivery_and_print().to_json()
-                    ws.send(j)
-                    print "===> tried to send image"
-                    done_once = True
+                    #gevent.sleep(0.5)
+                    #print "===> %s" % j
+                    #j = commands.set_delivery_and_print().to_json()
+                    #ws.send(j)
+                if event['type'] == 'DeviceEvent':
+                    counting += 1
+                    if counting == 10:
+                        gevent.sleep(0.5)
+                        j = commands.set_delivery_and_print().to_json()
+                        ws.send(j)
+                        print "===> tried to send image"
+                        pprint(j)
+                        done_once = True
             except:
                 pass
             

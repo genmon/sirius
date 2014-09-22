@@ -54,7 +54,7 @@ def set_delivery_and_print_payload(file_id, png_fn):
     # file ID is a 32 bit ID which is returned as a did_print event
     # three parts:
     # - command header
-    #   - >cxHL
+    #   - >cxHLL
     # - payload header
     #   - length >L
     # - payload
@@ -68,31 +68,31 @@ def set_delivery_and_print_payload(file_id, png_fn):
     #   - encode_image_region
     
     # device type >c, reserved byte >c,
-    # command_name >H (short), file_id >L (long)
-    command_header = struct.pack(">cxHL", '\x01', 1, 1)
+    # command_name >H (short), file_id >L (long),
+    # unimplemented CRC (long is zero)
+    command_header = struct.pack(">BBHLL", 1, 0, 1, 1, 0)
 
     # get the encoded image now, because we'll need the data later
     pixel_count, encoded_image = rle_image(png_fn)
 
     # payload header region
-    printer_control = struct.pack("<ccccccccccccc",
-        '\x1d', '\x73', '\x03', '\xe8', # max printer speed
-        '\x1d', '\x61', '\xd0', # printer acceleration
-        '\x1d', '\x2f', '\x0f', # peak current
-        '\x1d', '\x44', '\x80' # max intensity
+    printer_control = struct.pack("<13B",
+        0x1d, 0x73, 0x03, 0xe8, # max printer speed
+        0x1d, 0x61, 0xd0, # printer acceleration
+        0x1d, 0x2f, 0x0f, # peak current
+        0x1d, 0x44, 0x80  # max intensity
         )
     printer_byte_count = pixel_count / 8
     n3 = printer_byte_count / 65536
     n3_remainder = printer_byte_count % 65536
     n2 = n3_remainder / 256
     n1 = n3_remainder % 256
-    printer_data = struct.pack("<cccccxxc",
-        '\x1b', '\x2a', chr(n1), chr(n2), chr(n3), chr(48))
-    header_region = struct.pack(">xL", len(printer_control) + len(printer_data))
+    printer_data = struct.pack("<8B", 0x1b, 0x2a, n1, n2, n3, 0, 0, 48)
+    header_region = struct.pack(">BL", 0, len(printer_control) + len(printer_data))
     header_region += printer_control + printer_data
     
     # payload including the header
-    payload = struct.pack(">Lx", len(header_region) + len(encoded_image) + 1)
+    payload = struct.pack(">LB", len(header_region) + len(encoded_image) + 1, 0)
     payload += header_region + encoded_image
     
     entire_payload = command_header + struct.pack(">L", len(payload)) + payload
