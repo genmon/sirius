@@ -1,6 +1,5 @@
 from PIL import Image
 from itertools import groupby
-import array
 import struct
 
 WHITE = 0
@@ -73,6 +72,8 @@ def rle_image(image_fn):
     lengths = [g[1] for g in groups]
     x = bytearray(rle(lengths))
     compressed_data = struct.pack("<%dB" % len(x), *x)
+    
+    # package up with length as header
     # first byte is compressed type, always 1
     output = struct.pack("<BL", 0x01, len(compressed_data)) + compressed_data
 
@@ -94,7 +95,7 @@ if __name__ == '__main__':
     for length, code in TRANSLATE:
         length_codes[code] = length
     
-    for b in rle_encoded:
+    for b in rle_encoded[3:]: # jump the header bytes
         length = ord(b)
         if length in length_codes.keys():
             length = length_codes[length]
