@@ -19,7 +19,8 @@ import json
 # firmware_update
 
 TEST_FILE_ID = 1
-TEST_PNG_FN = '/Users/matt/Documents/dev-unversioned/sirius2/iconrethink.png'
+#TEST_PNG_FN = '/Users/matt/Documents/dev-unversioned/sirius2/iconrethink.png'
+TEST_PNG_FN = '/Users/matt/Documents/dev/sirius/tests/iconrethink.png'
 
 # some constants
 DEVICE_TYPE = '\x01' # rBergCloud::Barringer::DEVICE_TYPE in weminuche-server
@@ -70,7 +71,7 @@ def set_delivery_and_print_payload(file_id, png_fn):
     # device type c, reserved byte c,
     # command_name <H (short), file_id <L (long),
     # unimplemented CRC (long is zero)
-    command_header = struct.pack("<BBHLL", 1, 0, 1, 1, 0)
+    command_header = struct.pack("<BBHII", 1, 0, 1, 123, 0)
 
     # get the encoded image now, because we'll need the data later
     pixel_count, encoded_image = rle_image(png_fn)
@@ -88,14 +89,14 @@ def set_delivery_and_print_payload(file_id, png_fn):
     n2 = n3_remainder / 256
     n1 = n3_remainder % 256
     printer_data = struct.pack("<8B", 0x1b, 0x2a, n1, n2, n3, 0, 0, 48)
-    header_region = struct.pack("<BL", 0, len(printer_control) + len(printer_data))
+    header_region = struct.pack("<BI", 0, len(printer_control) + len(printer_data))
     header_region += printer_control + printer_data
     
     # payload including the header
-    payload = struct.pack("<LB", len(header_region) + len(encoded_image) + 1, 0)
+    payload = struct.pack("<IB", len(header_region) + len(encoded_image) + 1, 0)
     payload += header_region + encoded_image
     
-    entire_payload = command_header + struct.pack("<L", len(payload)) + payload
+    entire_payload = command_header + struct.pack("<I", len(payload)) + payload
     
     return entire_payload
     

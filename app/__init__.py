@@ -19,7 +19,9 @@ from . import commands
 # for this to work, I have to put the following line at line 38 of
 # flask_sockets, to inject it into the environment
 # environment.environ['HTTP_SEC_WEBSOCKET_PROTOCOL'] = 'bergcloud-bridge-v1'
-
+def protocol_name():
+    print "asked for protocol"
+    return 'bergcloud-bridge-v1'
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -29,7 +31,10 @@ def create_app(config_name):
     bootstrap.init_app(app)
     db.init_app(app)
     sockets.init_app(app)
-    
+
+    # maybe this sets the HTTP_SEC_WEBSOCKET_PROTOCOL ?
+    app.protocol_name = protocol_name
+
     # attach routes and custom error pages
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
@@ -58,7 +63,7 @@ def create_app(config_name):
                     #ws.send(j)
                 if event['type'] == 'DeviceEvent':
                     counting += 1
-                    if counting == 10:
+                    if counting == 4:
                         gevent.sleep(0.5)
                         j = commands.set_delivery_and_print().to_json()
                         ws.send(j)

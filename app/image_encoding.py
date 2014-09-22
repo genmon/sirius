@@ -72,7 +72,36 @@ def rle_image(image_fn):
     # encode using our custom encoding
     lengths = [g[1] for g in groups]
     x = bytearray(rle(lengths))
-    output = struct.pack("<%ds" % len(x), str(x))
+    compressed_data = struct.pack("<%dB" % len(x), *x)
+    # first byte is compressed type, always 1
+    output = struct.pack("<BL", 0x01, len(compressed_data)) + compressed_data
 
     # return (number of pixels, output)
     return len(pixels), output
+
+# ~~~~
+# Test
+# ~~~~
+
+if __name__ == '__main__':
+    # just see whether the output results in the same number of
+    # pixels as the input
+    TEST_PNG_FN = '/Users/matt/Documents/dev-unversioned/sirius2/iconrethink.png'
+    pixel_count, rle_encoded = rle_image(TEST_PNG_FN)
+
+    output_length = 0
+    length_codes = {}
+    for length, code in TRANSLATE:
+        length_codes[code] = length
+    
+    for b in rle_encoded:
+        length = ord(b)
+        if length in length_codes.keys():
+            length = length_codes[length]
+        output_length += length
+    
+    # Good, it matches
+    print "Input length: %d" % pixel_count
+    print "Output length: %d" % output_length
+
+        
