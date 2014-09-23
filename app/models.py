@@ -14,6 +14,7 @@ class BridgeCommand(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False)
     bridge_address = db.Column(db.String, nullable=False)
     json_payload = db.Column(db.UnicodeText, nullable=False)
+    state = db.Column(db.Enum('ready', 'failed', 'delivered', 'skipped'), nullable=False)
     return_code = db.Column(db.SmallInteger, nullable=True)
 
     def to_json(self):
