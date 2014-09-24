@@ -53,3 +53,19 @@ class DeviceCommand(db.Model):
             'binary_payload': self.binary_payload
         }
         return json.dumps(json_hash, encoding='utf-8')
+
+class Bridge(db.Model):
+    __tablename__ = 'bridges'
+    bridge_address = db.Column(db.String, primary_key=True)
+    last_power_on = db.Column(db.DateTime, nullable=False)
+
+class Device(db.Model):
+    __tablename__ = 'devices'
+    device_address = db.Column(db.String, primary_key=True)
+    hardware_xor = db.Column(db.String, nullable=False)
+
+class PendingClaim(db.Model):
+    __tablename__ = 'pending_claims'
+    id = db.Column(db.Integer, primary_key=True)
+    claim_code = db.Column(db.String, nullable=False)
+    hardware_xor = db.Column(db.String, nullable=False)
