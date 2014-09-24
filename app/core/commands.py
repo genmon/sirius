@@ -1,6 +1,6 @@
-from .models import BridgeCommand
-from .models import DeviceCommand
-from .image_encoding import rle_image
+from ..models.core import BridgeCommand
+from ..models.core import DeviceCommand
+from ..image_encoding import rle_image
 
 from .claiming import process_claim_code
 

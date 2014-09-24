@@ -1,4 +1,4 @@
-from crc16 import crc16
+from .crc16 import crc16
 from Crypto.Cipher import AES, XOR
 
 import struct

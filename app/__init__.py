@@ -12,8 +12,8 @@ bootstrap = Bootstrap()
 db = SQLAlchemy()
 sockets = Sockets()
 
-from . import commands
-from events import process_event
+from core import commands
+from core.events import process_event
 
 
 # @TODO
