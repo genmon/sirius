@@ -1,5 +1,8 @@
 from . import commands
 from .payload import DeviceEventPayload
+from . import claiming
+
+from datetime import datetime
 
 # process_event should...
 # - break apart the event
@@ -8,6 +11,24 @@ from .payload import DeviceEventPayload
 # - create DeviceEvent models and propagate out if necessary
 # all of this is happening within a try:except: in the event loop,
 # so don't be afraid to crash out
+
+class PendingClaims(object):
+    
+    def __init__(self):
+        self.encryption_keys = {} # hardware_address_xor: encryption_key
+    
+    def add_claim_code(self, claim_code):
+        hardware_address_xor, encryption_key = claiming.process_claim_code(claim_code)
+        #@TODO handle exception
+        
+        self.encryption_keys[hardware_address_xor] = encryption_key
+    
+    def key_for_address(self, device_address):
+        hardware_address_xor = claiming.make_hardware_address_xor(device_address)
+        return self.encryption_keys.get(hardware_address_xor, None)
+
+pending_claims = PendingClaims()
+
 
 class EventProcessingException(Exception): pass
 
@@ -21,7 +42,8 @@ def process_event(ws, event, command_sender):
         # types: heartbeat, did_print, did_power_on
         # see device_event.py in hubcode
         payload = DeviceEventPayload.from_base64(event['binary_payload'])
-        print "DeviceEvent: %r" % payload['name']
+        timestamp = datetime.fromtimestamp(event['timestamp'])
+        print "DeviceEvent: %r at %s" % (payload['name'], timestamp.isoformat())
         if payload['name'] == 'heartbeat':
             if command_sender.did_send_image is False:
                 print "Sending set_delivery_and_print"
@@ -33,7 +55,8 @@ def process_event(ws, event, command_sender):
         # change the command delivery map. there is also power_on,
         # encryption_key_required [4 events are all I can find]
         event_name = event['json_payload']['name']
-        print "BridgeEvent: %r" % event_name
+        timestamp = datetime.fromtimestamp(event['timestamp'])
+        print "BridgeEvent: %r at %s" % (event_name, timestamp.isoformat())
         if event_name == 'device_connect':
             command_sender.add_device(event['json_payload']['device_address'], ws)
         elif event_name == 'device_disconnect':
