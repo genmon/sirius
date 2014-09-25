@@ -1,4 +1,5 @@
-from .. import db
+from app import db
+from app.core import claiming
 
 import json
 
@@ -44,6 +45,7 @@ class DeviceCommand(db.Model):
     binary_payload = db.Column(db.Text, nullable=False)
     state = db.Column(db.Enum('ready', 'failed', 'delivered', 'skipped'), nullable=False)
     deliver_at = db.Column(db.DateTime, nullable=False)
+    return_code = db.Column(db.SmallInteger, nullable=True)
     
     def to_json(self):
         json_hash = {
@@ -57,12 +59,33 @@ class DeviceCommand(db.Model):
 class Bridge(db.Model):
     __tablename__ = 'bridges'
     bridge_address = db.Column(db.String, primary_key=True)
-    last_power_on = db.Column(db.DateTime, nullable=False)
+    last_power_on = db.Column(db.DateTime, nullable=True) #@TODO should be false
+    
+    @classmethod
+    def get_or_create(cls, bridge_address):
+        b = cls.query.get(bridge_address)
+        if b is None:
+            b = cls(bridge_address=bridge_address)
+            db.session.add(b)
+            db.session.commit()
+        return b           
+
 
 class Device(db.Model):
     __tablename__ = 'devices'
     device_address = db.Column(db.String, primary_key=True)
     hardware_xor = db.Column(db.String, nullable=False)
+    
+    @classmethod
+    def get_or_create(cls, device_address):
+        d = cls.query.get(device_address)
+        if d is None:
+            d = cls(device_address=device_address,
+                    hardware_xor=claiming.make_hardware_xor(device_address))
+            db.session.add(d)
+            db.session.commit()
+        return d
+    
 
 class PendingClaim(db.Model):
     __tablename__ = 'pending_claims'

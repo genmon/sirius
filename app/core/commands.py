@@ -1,3 +1,5 @@
+from app import db
+
 from ..models.core import BridgeCommand
 from ..models.core import DeviceCommand
 from ..image_encoding import rle_image
@@ -20,7 +22,8 @@ import json
 
 TEST_FILE_ID = 1
 #TEST_PNG_FN = '/Users/matt/Documents/dev-unversioned/sirius2/iconrethink.png'
-TEST_PNG_FN = '/Users/matt/Documents/dev/sirius/tests/iconrethink.png'
+#TEST_PNG_FN = '/Users/matt/Documents/dev/sirius/tests/iconrethink.png'
+TEST_PNG_FN = '/Users/matt/Documents/dev/sirius/tests/riley.png'
 
 # some constants
 DEVICE_TYPE = '\x01' # rBergCloud::Barringer::DEVICE_TYPE in weminuche-server
@@ -46,9 +49,13 @@ def add_device_encryption_key():
     command = BridgeCommand(
         bridge_address='000d6f0001b397c3',
         json_payload=json.dumps(payload),
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
+        state='ready'
     )
-    command.id = 1
+    
+    db.session.add(command)
+    db.session.commit()
+    
     return command   
 
 def set_delivery_and_print_payload(file_id, png_fn):
@@ -100,12 +107,13 @@ def set_delivery_and_print_payload(file_id, png_fn):
     
     return entire_payload
     
-def set_delivery_and_print():
+def set_delivery_and_print(device_address):
     command = DeviceCommand(
-        device_address='000d6f000273ce0b',
+        device_address=device_address,
         binary_payload=base64.b64encode(set_delivery_and_print_payload(TEST_FILE_ID, TEST_PNG_FN)),
         state='ready',
         deliver_at=datetime.utcnow()
     )
-    command.id = 1
+    db.session.add(command)
+    db.session.commit()
     return command

@@ -37,6 +37,25 @@ def create_app(config_name):
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
     
-    from .core import coresocket, command_sender
-      
+    #from .core import coresocket
+    from .core.command_sender import CommandSender
+    from .core.events import process_event
+
+    @sockets.route('/api/v1/connection') 
+    def coresocket(ws):
+        print "here"
+        while True: 
+            message = ws.receive()            
+            #pprint(message)
+       
+            #try:
+            event = json.loads(message)
+            with app.request_context(ws.environ):
+                process_event(ws, event, sender)
+            #except Exception, e:
+            #    print "Exception: %r" % e
+        
+    sender = CommandSender()
+    sender.run()
+    
     return app

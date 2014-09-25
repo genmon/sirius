@@ -130,7 +130,7 @@ def generate_link_key(input):
 #
 # Return the link key in Base64, and the XORed hardware_address
 def process_claim_code(claim_code):
-    hardware_address_xor, secret, crc, raw_value = unpack_claim_code(claim_code)
+    hardware_xor, secret, crc, raw_value = unpack_claim_code(claim_code)
     
     # Generate our own CRC from the raw_value, and confirm it matches the extracted crc
     data_for_crc = struct.pack("<Q", raw_value & 0xffffffffffffffff)
@@ -145,11 +145,11 @@ def process_claim_code(claim_code):
     link_key = generate_link_key(packed_secret)
     link_key_b64 = base64.encodestring(link_key)
     
-    return (hardware_address_xor, link_key_b64)
+    return (hardware_xor, link_key_b64)
 
-def make_hardware_address_xor(device_address):
-    # the hardware_address_xor from device_address 000d6f000273ce0b
-    # should match the hardware_address_xor from claim_code
+def make_hardware_xor(device_address):
+    # the hardware_xor from device_address 000d6f000273ce0b
+    # should match the hardware_xor from claim_code
     # ps2f-gsjg-8wsq-7hc4
     b = bytearray.fromhex(device_address)
     
