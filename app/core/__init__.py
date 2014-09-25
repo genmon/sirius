@@ -70,10 +70,8 @@ class WebsocketClient(object):
 # see https://devcenter.heroku.com/articles/python-websockets
 # for a good pattern
 @sockets.route('/api/v1/connection') 
-def socket(ws):
+def coresocket(ws):
     print "here"
-    done_once = False
-    counting = 0
     command_sender.register(ws)
     while True: 
         message = ws.receive()            
