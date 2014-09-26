@@ -12,7 +12,6 @@ bootstrap = Bootstrap()
 db = SQLAlchemy()
 sockets = Sockets()
 
-
 # @TODO
 # for this to work, I have to put the following line at line 38 of
 # flask_sockets, to inject it into the environment
@@ -29,7 +28,7 @@ def create_app(config_name):
     bootstrap.init_app(app)
     db.init_app(app)
     sockets.init_app(app)
-
+    
     # maybe this sets the HTTP_SEC_WEBSOCKET_PROTOCOL ?
     app.protocol_name = protocol_name
 
@@ -41,8 +40,11 @@ def create_app(config_name):
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
     
     #from .core import coresocket
-    from .core.command_sender import CommandSender
     from .core.events import process_event
+    from .core.command_sender import CommandSender
+
+    sender = CommandSender()
+    sender.run()
 
     @sockets.route('/api/v1/connection') 
     def coresocket(ws):
@@ -57,8 +59,5 @@ def create_app(config_name):
                 process_event(ws, event, sender)
             #except Exception, e:
             #    print "Exception: %r" % e
-        
-    sender = CommandSender()
-    sender.run()
     
     return app

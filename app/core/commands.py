@@ -117,7 +117,7 @@ def set_delivery_and_print(device_address):
     command = DeviceCommand(
         device_address=device_address,
         binary_payload=base64.b64encode(set_delivery_and_print_payload(TEST_FILE_ID, TEST_PNG_FN)),
-        state='ready',
+        state=u'ready',
         deliver_at=datetime.utcnow()
     )
     db.session.add(command)

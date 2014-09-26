@@ -1,7 +1,7 @@
 from app import sockets
 
 from .events import process_event
-from .command_sender import CommandSender
+#from .command_sender import CommandSender
 
 import json
 
