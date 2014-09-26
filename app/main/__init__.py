@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, flash
+from flask import Blueprint, render_template, flash, current_app
 from flask.ext.wtf import Form
 from wtforms import StringField, TextAreaField, BooleanField, SelectField,\
     SubmitField
@@ -23,9 +23,12 @@ def index():
 def device(device_address):
 	device = Device.query.get_or_404(device_address)
 	form = SendDeliveryForm()
+	sender = current_app.sender
 	
 	if form.validate_on_submit():
 		flash('Form submitted')
-		#dc = set_delivery_and_print(device_address)
-		# now queue it, but where?
+		q = sender.for_device(device)
+		if q is not None:
+			dc = set_delivery_and_print(device.device_address)
+			q.queue_device_command(dc)
 	return render_template('dump.html', dump=pprint.pformat(device), form=form)

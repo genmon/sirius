@@ -41,10 +41,12 @@ def create_app(config_name):
     
     #from .core import coresocket
     from .core.events import process_event
-    from .core.command_sender import CommandSender
+    #from .core.command_sender import CommandSender
 
+    from queues import CommandSender
     sender = CommandSender()
     sender.run()
+    app.sender = sender
 
     @sockets.route('/api/v1/connection') 
     def coresocket(ws):

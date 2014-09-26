@@ -55,8 +55,8 @@ def process_event(ws, event, sender):
                 if device is not None:
                     q = sender.for_device(device)
                     if q is not None:
-                        dc = commands.set_delivery_and_print(event['device_address'])
-                        q.queue_device_command(dc)
+                        #dc = commands.set_delivery_and_print(event['device_address'])
+                        #q.queue_device_command(dc)
                         sender.did_send_image = True
     elif event['type'] == 'BridgeEvent':
         # unwrap here. use device_connect and device_disconnect to
