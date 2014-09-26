@@ -4,4 +4,11 @@
 
 {% block page_content %}
 <h1>Hello, World!</h1>
+
+<ul>
+	{% for d in devices %}
+	<li><a href="{{ url_for('main.device', device_address=d.device_address) }}">{{ d.device_address }}</a></li>
+	{% endfor %}
+</ul>
+
 {% endblock %}

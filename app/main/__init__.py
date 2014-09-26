@@ -8,9 +8,7 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
-	devices = []
-	
-	
+	devices = Device.query.all()
 	
 	return render_template('index.html', devices=devices)
 
