@@ -119,7 +119,7 @@ class _CommandQueue(object):
 		if self.device_pending[da][0] == command.id:
 			self.device_pending[da] = None
 		self.device_queue[da] = \
-			[c for c in self.device_queue[da] if c.id != command.id]
+			[c for c in self.device_queue[da] if c[0] != command.id]
 	
 	def prepare_commands_to_send(self):
 		commands_to_send = []
