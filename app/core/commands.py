@@ -1,7 +1,6 @@
 from app import db
 
-from ..models.core import BridgeCommand
-from ..models.core import DeviceCommand
+from app.models.core import BridgeCommand, DeviceCommand, Bridge, Device
 from ..image_encoding import rle_image
 
 from .claiming import process_claim_code
@@ -31,32 +30,39 @@ COMMAND_ID = {
     'set_delivery_and_print': 0x0001
 }
 
-def add_device_encryption_key():
-    bridge_address = "000d6f00026c6edd"
-    device_address = "000d6f000273ce0b"
-    #claim_code = "6xwh-441j-8115-zyrh"
-    claim_code = "ps2f-gsjg-8wsq-7hc4"
-    _, encryption_key = process_claim_code(claim_code)
-    
-    payload = {
-        'name': 'add_device_encryption_key',
-        'params': {
-            'device_address': device_address,
-            'encryption_key': encryption_key
-        }
-    }
-
-    command = BridgeCommand(
-        bridge_address='000d6f0001b397c3',
-        json_payload=json.dumps(payload),
-        timestamp=datetime.utcnow(),
-        state='ready'
-    )
-    
-    db.session.add(command)
-    db.session.commit()
-    
-    return command   
+def add_device_encryption_key(bridge, device):
+	# populate pending_claims. @TODO back onto database instead
+	claim_codes = ['6xwh-441j-8115-zyrh', 'ps2f-gsjg-8wsq-7hc4']
+	pending_claims = {} # hardware_xor: encryption_key
+	for c in claim_codes:
+		hw, key = process_claim_code(c)
+		pending_claims[hw] = key
+	
+	if not pending_claims.has_key(device.hardware_xor):
+		print "Device %r %r" % (device.device_address, device.hardware_xor)
+		for hw, key in pending_claims.items():
+			print "Pending claim %r %r" % (hw, key)
+		raise Exception("No pending claim for device")
+	
+	payload = {
+		'name': 'add_device_encryption_key',
+		'params': {
+			'device_address': device.device_address,
+			'encryption_key': pending_claims[device.hardware_xor]
+		}
+	}
+	
+	command = BridgeCommand(
+		bridge_address=bridge.bridge_address,
+		json_payload=json.dumps(payload),
+		timestamp=datetime.utcnow(),
+		state=u'ready'
+	)
+	
+	db.session.add(command)
+	db.session.commit()
+	
+	return command
 
 def set_delivery_and_print_payload(file_id, png_fn):
     # file ID is a 32 bit ID which is returned as a did_print event

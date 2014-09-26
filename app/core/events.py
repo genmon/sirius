@@ -76,7 +76,8 @@ def process_event(ws, event, sender):
             sender.register(ws, bridge)
         elif event_name == 'encryption_key_required':
             print "Sending add_device_encryption_key"
-            bc = commands.add_device_encryption_key()
+            device = Device.get_or_create(event['json_payload']['device_address'])
+            bc = commands.add_device_encryption_key(bridge, device)
             sender.for_bridge(bridge).queue_bridge_command(bc)
         else:
             raise EventProcessingException("Unknown BridgeEvent command name: %r" % command_name)

@@ -1,5 +1,4 @@
 from app import db
-from app.core import claiming
 
 import json
 
@@ -74,18 +73,40 @@ class Bridge(db.Model):
 class Device(db.Model):
     __tablename__ = 'devices'
     device_address = db.Column(db.String, primary_key=True)
-    hardware_xor = db.Column(db.String, nullable=False)
+    hardware_xor = db.Column(db.Integer, nullable=False)
     
     @classmethod
     def get_or_create(cls, device_address):
         d = cls.query.get(device_address)
         if d is None:
             d = cls(device_address=device_address,
-                    hardware_xor=claiming.make_hardware_xor(device_address))
+                    hardware_xor=Device.make_hardware_xor(device_address))
             db.session.add(d)
             db.session.commit()
         return d
     
+    @staticmethod
+    def make_hardware_xor(device_address):
+        # the hardware_xor from device_address 000d6f000273ce0b
+        # should match the hardware_xor from claim_code
+        # ps2f-gsjg-8wsq-7hc4
+        # and (I think) 000d6f00015ff77f should lead to 6290192
+        # and match claim code 6xwh441j8115zyrh
+        # and this 0011223344aabb01 leads to 10087971
+        b = bytearray.fromhex(device_address)
+        
+        # little endian
+        b.reverse()
+    
+        claim_address = bytearray(3)
+        claim_address[0] = b[0] ^ b[5]
+        claim_address[1] = b[1] ^ b[3] ^ b[6]
+        claim_address[2] = b[2] ^ b[4] ^ b[7]
+
+        result = claim_address[2] << 16 | claim_address[1] << 8 | claim_address[0]
+    
+        return result
+
 
 class PendingClaim(db.Model):
     __tablename__ = 'pending_claims'

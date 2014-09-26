@@ -147,20 +147,6 @@ def process_claim_code(claim_code):
     
     return (hardware_xor, link_key_b64)
 
-def make_hardware_xor(device_address):
-    # the hardware_xor from device_address 000d6f000273ce0b
-    # should match the hardware_xor from claim_code
-    # ps2f-gsjg-8wsq-7hc4
-    b = bytearray.fromhex(device_address)
-    
-    claim_address = bytearray(3)
-    claim_address[0] = b[0] ^ b[5]
-    claim_address[1] = b[1] ^ b[3] ^ b[6]
-    claim_address[2] = b[2] ^ b[4] ^ b[7]
-    
-    result = claim_address[2] << 16 | claim_address[1] << 8 | claim_address[0]
-    
-    return result
 
 # ~~~~
 # Test
