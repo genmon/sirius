@@ -30,7 +30,7 @@ def deploy():
 	# migrate database to latest revision
 	upgrade()
 
-
+	
 if __name__ == '__main__':
     manager.run()
 

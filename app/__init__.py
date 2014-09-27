@@ -7,6 +7,7 @@ from config import config
 from pprint import pprint
 import json
 import gevent
+import sys
 
 bootstrap = Bootstrap()
 db = SQLAlchemy()
@@ -16,9 +17,9 @@ sockets = Sockets()
 # for this to work, I have to put the following line at line 38 of
 # flask_sockets, to inject it into the environment
 # environment.environ['HTTP_SEC_WEBSOCKET_PROTOCOL'] = 'bergcloud-bridge-v1'
-def protocol_name():
-    print "asked for protocol"
-    return 'bergcloud-bridge-v1'
+#def protocol_name():
+#    print "asked for protocol"
+ #   return 'bergcloud-bridge-v1'
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -30,7 +31,7 @@ def create_app(config_name):
     sockets.init_app(app)
     
     # maybe this sets the HTTP_SEC_WEBSOCKET_PROTOCOL ?
-    app.protocol_name = protocol_name
+    #app.protocol_name = protocol_name
 
     # attach routes and custom error pages
     from .main import main as main_blueprint
@@ -51,6 +52,7 @@ def create_app(config_name):
     @sockets.route('/api/v1/connection') 
     def coresocket(ws):
         print "here"
+        sys.stdout.flush()
         while True: 
             message = ws.receive()            
             #pprint(message)
