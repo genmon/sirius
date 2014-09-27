@@ -1,8 +1,7 @@
 from app import db
 
 from app.models.core import BridgeCommand, DeviceCommand, Bridge, Device
-from ..image_encoding import rle_image
-
+from ..image_encoding import rle_image, rle_html
 from .claiming import process_claim_code
 
 import struct
@@ -64,7 +63,7 @@ def add_device_encryption_key(bridge, device):
 	
 	return command
 
-def set_delivery_and_print_payload(file_id, png_fn):
+def set_delivery_and_print_payload(file_id, png_fn, html=None):
     # file ID is a 32 bit ID which is returned as a did_print event
     # three parts:
     # - command header
@@ -87,7 +86,10 @@ def set_delivery_and_print_payload(file_id, png_fn):
     command_header = struct.pack("<BBHII", 1, 0, 1, 123, 0)
 
     # get the encoded image now, because we'll need the data later
-    pixel_count, encoded_image = rle_image(png_fn)
+    if html:
+        pixel_count, encoded_image = rle_html(html)
+    else:
+        pixel_count, encoded_image = rle_image(png_fn)
 
     # payload header region
     printer_control = struct.pack("<13B",
@@ -113,10 +115,10 @@ def set_delivery_and_print_payload(file_id, png_fn):
     
     return entire_payload
     
-def set_delivery_and_print(device_address):
+def set_delivery_and_print(device_address, html=None):
     command = DeviceCommand(
         device_address=device_address,
-        binary_payload=base64.b64encode(set_delivery_and_print_payload(TEST_FILE_ID, TEST_PNG_FN)),
+        binary_payload=base64.b64encode(set_delivery_and_print_payload(TEST_FILE_ID, TEST_PNG_FN, html=html)),
         state=u'ready',
         deliver_at=datetime.utcnow()
     )

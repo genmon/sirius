@@ -1,6 +1,7 @@
 from PIL import Image
 from itertools import groupby
 import struct
+import io
 
 WHITE = 0
 BLACK = 1
@@ -47,10 +48,13 @@ def rle(lengths):
                 if remainder > 0:
                     yield 0
                     yield remainder
- 
+
 def rle_image(image_fn):
-    # get image pixels
     im = Image.open(image_fn)
+    return _rle_image(im)
+
+def _rle_image(im):
+    # get image pixels
     im = im.convert('RGBA')
     pixels = im.getdata()
 
@@ -79,6 +83,20 @@ def rle_image(image_fn):
 
     # return (number of pixels, output)
     return len(pixels), output
+
+def rle_html(html):
+	from selenium import webdriver
+	driver = webdriver.PhantomJS('phantomjs')
+	driver.set_window_size(384, 800)
+	#driver.get("http://www.google.com")
+	
+	driver.get("about:black")
+	html = html.replace('"', '\\"')
+	driver.execute_script("""document.write("%s")""" % html)
+	
+	p = driver.get_screenshot_as_png()
+	im = Image.open(io.BytesIO(p))
+	return _rle_image(im)
 
 # ~~~~
 # Test

@@ -26,9 +26,10 @@ def device(device_address):
 	sender = current_app.sender
 	
 	if form.validate_on_submit():
+		html = """<html><body><h1>Hello, World!</h1><p>My name is Little Printer</p></html>"""
 		flash('Form submitted')
 		q = sender.for_device(device)
 		if q is not None:
-			dc = set_delivery_and_print(device.device_address)
+			dc = set_delivery_and_print(device.device_address, html=html)
 			q.queue_device_command(dc)
 	return render_template('dump.html', dump=pprint.pformat(device), form=form)
