@@ -18,6 +18,7 @@ gevent-websocket==0.9.3
 greenlet==0.4.4
 gunicorn==19.1.1
 itsdangerous==0.24
+psycopg2==2.5.4
 pycrypto==2.6.1
 redis==2.10.3
 selenium==2.43.0
