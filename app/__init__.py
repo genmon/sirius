@@ -53,15 +53,17 @@ def create_app(config_name):
     def coresocket(ws):
         print "here"
         sys.stdout.flush()
-        while True: 
+        while True:
+            gevent.sleep()
             message = ws.receive()            
             #pprint(message)
-       
-            #try:
-            event = json.loads(message)
-            with app.request_context(ws.environ):
-                process_event(ws, event, sender)
-            #except Exception, e:
-            #    print "Exception: %r" % e
+            if message:
+                app.logger.info(u'Got message: {}'.format(message))
+                #try:
+                event = json.loads(message)
+                with app.request_context(ws.environ):
+                    process_event(ws, event, sender)
+                #except Exception, e:
+                #    print "Exception: %r" % e
     print "app created"
     return app
