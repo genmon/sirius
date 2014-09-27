@@ -47,7 +47,7 @@ def create_app(config_name):
     sender = CommandSender()
     sender.run()
     app.sender = sender
-
+    
     @sockets.route('/api/v1/connection') 
     def coresocket(ws):
         print "here"
@@ -61,5 +61,5 @@ def create_app(config_name):
                 process_event(ws, event, sender)
             #except Exception, e:
             #    print "Exception: %r" % e
-    
+    print "app created"
     return app
