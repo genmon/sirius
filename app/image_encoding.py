@@ -2,6 +2,7 @@ from PIL import Image
 from itertools import groupby
 import struct
 import io
+import time
 
 WHITE = 0
 BLACK = 1
@@ -85,15 +86,27 @@ def _rle_image(im):
     return len(pixels), output
 
 def rle_html(html):
+	""" This works:
+	<html><body style="width: 384px; margin: 0;">
+	<img src="https://dl.dropboxusercontent.com/u/165957/Escher.gif">
+	</body></html>
+	"""
 	from selenium import webdriver
 	driver = webdriver.PhantomJS('phantomjs')
-	driver.set_window_size(384, 800)
+	driver.set_window_size(384, 5)
 	#driver.get("http://www.google.com")
 	
-	driver.get("about:black")
+	driver.get("about:blank")
 	html = html.replace('"', '\\"')
 	driver.execute_script("""document.write("%s")""" % html)
+	# @TODO good grief, I can't just go putting sleeps around the place.
+	# how else to tell when the document.write has finished rendering, and
+	# all the images have loaded?
+	# maybe I need to inject something like this and look for an alert?
+	# http://imagesloaded.desandro.com
+	time.sleep(2)
 	
+	#p = driver.get_screenshot_as_file("/Users/matt/Desktop/test5.png")
 	p = driver.get_screenshot_as_png()
 	im = Image.open(io.BytesIO(p))
 	return _rle_image(im)

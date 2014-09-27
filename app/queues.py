@@ -84,7 +84,7 @@ class _CommandQueue(object):
 		self.device_queue = {} # device_address: [DeviceCommand]
 		self.bridge_pending = None
 		self.device_pending = {} # device_address: None|DeviceCommand
-	    
+
 	def add_device(self, device):
 		da = device.device_address
 		if da not in self.devices:
