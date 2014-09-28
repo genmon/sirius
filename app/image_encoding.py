@@ -98,6 +98,9 @@ def rle_html(html):
 	
 	driver.get("about:blank")
 	html = html.replace('"', '\\"')
+	html = html.replace("\n", " ")
+	html = html.replace("\t", " ")
+	html = html.replace("\r", " ")
 	driver.execute_script("""document.write("%s")""" % html)
 	# @TODO good grief, I can't just go putting sleeps around the place.
 	# how else to tell when the document.write has finished rendering, and
