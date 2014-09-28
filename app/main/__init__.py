@@ -7,12 +7,13 @@ from app.models.core import Device
 from app.core.commands import set_delivery_and_print
 
 import pprint
+import cgi
 
 main = Blueprint('main', __name__)
 
 class SendDeliveryForm(Form):
-	html = TextAreaField(u'HTML to render')
-	submit = SubmitField('Send Delivery')
+	message = TextAreaField(u'Type a message here')
+	submit = SubmitField('Send')
 
 @main.route('/')
 def index():
@@ -27,10 +28,10 @@ def device(device_address):
 	sender = current_app.sender
 	
 	if form.validate_on_submit():
-		#html = """<html><body><h1>Hello, World!</h1><p>My name is Little Printer</p></html>"""
+		html = """<html><body style="width: 384px; margin: 0;"><h1>%s</h1></body></html>""" % form.message.data
 		flash('Form submitted')
 		q = sender.for_device(device)
 		if q is not None:
-			dc = set_delivery_and_print(device.device_address, html=form.html.data)
+			dc = set_delivery_and_print(device.device_address, html=html)
 			q.queue_device_command(dc)
 	return render_template('dump.html', dump=pprint.pformat(device), form=form)
