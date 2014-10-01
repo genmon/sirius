@@ -31,7 +31,8 @@ COMMAND_ID = {
 
 def add_device_encryption_key(bridge, device):
 	# populate pending_claims. @TODO back onto database instead
-	claim_codes = ['6xwh-441j-8115-zyrh', 'ps2f-gsjg-8wsq-7hc4']
+	claim_codes = ['6xwh-441j-8115-zyrh', 'ps2f-gsjg-8wsq-7hc4',
+					'eocd-880w-be80-vc36']
 	pending_claims = {} # hardware_xor: encryption_key
 	for c in claim_codes:
 		hw, key = process_claim_code(c)
