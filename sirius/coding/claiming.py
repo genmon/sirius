@@ -148,6 +148,11 @@ def process_claim_code(claim_code):
     return (hardware_xor, link_key_b64)
 
 
+def key_from_claim_code(claim_code):
+    _, key = process_claim_code(claim_code)
+    return key
+
+
 # ~~~~
 # Test
 # ~~~~

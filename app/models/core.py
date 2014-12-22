@@ -45,7 +45,7 @@ class DeviceCommand(db.Model):
     state = db.Column(db.String, nullable=False)
     deliver_at = db.Column(db.DateTime, nullable=False)
     return_code = db.Column(db.SmallInteger, nullable=True)
-    
+
     def to_json(self):
         json_hash = {
             'command_id': self.id,
@@ -59,7 +59,7 @@ class Bridge(db.Model):
     __tablename__ = 'bridges'
     bridge_address = db.Column(db.String, primary_key=True)
     last_power_on = db.Column(db.DateTime, nullable=True) #@TODO should be false
-    
+
     @classmethod
     def get_or_create(cls, bridge_address):
         b = cls.query.get(bridge_address)
@@ -67,14 +67,14 @@ class Bridge(db.Model):
             b = cls(bridge_address=bridge_address)
             db.session.add(b)
             db.session.commit()
-        return b           
+        return b
 
 
 class Device(db.Model):
     __tablename__ = 'devices'
     device_address = db.Column(db.String, primary_key=True)
     hardware_xor = db.Column(db.Integer, nullable=False)
-    
+
     @classmethod
     def get_or_create(cls, device_address):
         d = cls.query.get(device_address)
@@ -84,7 +84,7 @@ class Device(db.Model):
             db.session.add(d)
             db.session.commit()
         return d
-    
+
     @staticmethod
     def make_hardware_xor(device_address):
         # the hardware_xor from device_address 000d6f000273ce0b
@@ -94,17 +94,17 @@ class Device(db.Model):
         # and match claim code 6xwh441j8115zyrh
         # and this 0011223344aabb01 leads to 10087971
         b = bytearray.fromhex(device_address)
-        
+
         # little endian
         b.reverse()
-    
+
         claim_address = bytearray(3)
         claim_address[0] = b[0] ^ b[5]
         claim_address[1] = b[1] ^ b[3] ^ b[6]
         claim_address[2] = b[2] ^ b[4] ^ b[7]
 
         result = claim_address[2] << 16 | claim_address[1] << 8 | claim_address[0]
-    
+
         return result
 
 

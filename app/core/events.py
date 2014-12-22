@@ -17,16 +17,16 @@ from pprint import pprint
 # so don't be afraid to crash out
 
 class PendingClaims(object):
-    
+
     def __init__(self):
         self.encryption_keys = {} # hardware_xor: encryption_key
-    
+
     def add_claim_code(self, claim_code):
         hardware_xor, encryption_key = claiming.process_claim_code(claim_code)
         #@TODO handle exception
-        
+
         self.encryption_keys[hardware_xor] = encryption_key
-    
+
     def key_for_address(self, device_address):
         hardware_xor = claiming.make_hardware_xor(device_address)
         return self.encryption_keys.get(hardware_xor, None)
@@ -105,7 +105,7 @@ def process_event(ws, event, sender):
         # the queue, or to resend it
         bridge = Bridge.query.get(event['bridge_address'])
         if bridge is not None:
-            sender.for_bridge(bridge).handle_bridge_response(c)       
+            sender.for_bridge(bridge).handle_bridge_response(c)
     elif event['type'] == 'DeviceCommandResponse':
         # if the return_code is 0, set state as delivered
         # else mark it as failed
@@ -126,6 +126,6 @@ def process_event(ws, event, sender):
         # the queue, or to resend it
         device = Device.query.get(event['device_address'])
         if device is not None:
-            sender.for_device(device).handle_device_response(c)   
+            sender.for_device(device).handle_device_response(c)
     else:
         raise EventProcessingException("Unknown event type: %r" % event['type'])

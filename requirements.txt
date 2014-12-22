@@ -23,3 +23,4 @@ pycrypto==2.6.1
 redis==2.10.3
 selenium==2.43.0
 wsgiref==0.1.2
+nose

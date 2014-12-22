@@ -1,0 +1,192 @@
+// Write down protocol buffer definitions of the protocol as observed
+// in the wild. We are not actually using these, I added them for reference.
+//
+// Note that the protocol is slightly weird in that the json-message
+// is polymorphic based on one of its member's values. So the decode
+// process is:
+// 1) read message.type
+// 2) look up decoder based on message.type
+// 3) run specific decoder
+//
+// The same is true for the sub-messages in json_payload and
+// binary_payload.
+
+message BridgeEvent {
+  // e.g. "000d6f0002ff7a91"
+  required string bridge_address = 1;
+  // e.g. "BridgeEvent"
+  required string type = 2;
+  // e.g. 1346501618.506583
+  required float timestamp = 3;
+  // json_payload dispatches on type
+  required Payload json_payload = 4;
+}
+
+message BridgeLog {
+  // e.g. "000d6f0002ff7a91"
+  required string bridge_address = 1;
+  // "BridgeLog"
+  required string type = 2;
+  // e.g. 1346501618.506583
+  required float timestamp =  3;
+  // standard python logging stuff
+  repeated LogRecord records = 4;
+}
+
+message DeviceEvent {
+  required string bridge_address = 1;
+  // "DeviceEvent"
+  required string type = 2;
+  // e.g. 1346501618.506583
+  required float timestamp =  3;
+  // e.g. 000d6f000273ce0b
+  required string device_address = 4;
+  // e.g. "AQAAAAAABAAAABQAAAA="
+  required bytes binary_payload = 5;
+  // [-31, -32, -30]
+  repeated int rssi_stats = 6;
+}
+
+message LogRecord {
+  // {"name": "ws4py", "created": 1346503015.4821309, "process": 495,
+  // "levelno": 40, "processName": "MainProcess", "message": "Failed
+  // to receive data", "levelname": "ERROR"}
+  required string name = 1;
+  // e.g. 1346501618.506583
+  required float created = 2;
+  required int process = 3;
+  required int levelno = 4;
+  required string processName = 5;
+  required string message = 6;
+  required string levelname = 7;
+}
+
+// poweron is the json_payload for a BridgeEvent
+message PowerOn {
+  // power_on:
+  required string name = 1;
+  required string model = 2; // e.g. B
+  // "v2.3.1-f3c7946",
+  required string firmware_version = 3;
+  // "0x46C5"
+  required string ncp_version = 4;
+  // "local_ip_address" : "192.168.2.117",
+  required string local_ip_address = 5;
+  // "mac_address" : "40:d8:55:19:77:2e",
+  required string mac_address = 6;
+  // "uptime" : "830.55 798.31",
+  required string uptime = 7;
+  // "uboot_environment" :
+  required bytes uboot_environment = 8;
+  required NetworkInfo network_info = 9;
+}
+
+message NetworkInfo {
+  // "node_type" : "EMBER_COORDINATOR",
+  required string node_type  = 1;
+  // "security_level" : 5,
+  required int security_level = 2;
+  // "security_profile" : "Custom",
+  required string security_profile = 3;
+  // "network_status" : "EMBER_JOINED_NETWORK",
+  required string network_status = 4;
+  // "pan_id" : "0xDCC9",
+  required string pan_id = 5;
+  // "node_eui64" : "0x000d6f0002ff7a91",
+  required string node_eui64 = 6;
+  // "power" : 8,
+  required int power = 7;
+  // "node_id" : "0x0000",
+  required string node_id = 8;
+  // "channel" : 16,
+  required int channel = 9;
+  // "radio_power_mode" : "EMBER_TX_POWER_MODE_BOOST",
+  required string radio_power_mode = 10;
+  // "extended_pan_id" : "0x42455247b439420c"
+  required string extended_pan_id = 11;
+}
+
+enum EmberNetworkStatus {
+  EMBER_NO_NETWORK = 0;
+  EMBER_JOINING_NETWORK = 1;
+  EMBER_JOINED_NETWORK = 2;
+  EMBER_JOINED_NETWORK_NO_PARENT = 3;
+  EMBER_LEAVING_NETWORK = 4;
+}
+enum EmberSecurityProfile {
+  NONE_SECURITY_PROFILE = 0;
+  HA_SECURITY_PROFILE = 1;
+  SE_SECURITY_PROFILE_TEST = 2;
+  SE_SECURITY_PROFILE_FULL = 3;
+}
+
+enum EmberNodeType {
+  EMBER_UNKNOWN_DEVICE = 0;
+  EMBER_COORDINATOR = 1;
+  EMBER_ROUTER = 2;
+  EMBER_END_DEVICE = 3;
+  EMBER_SLEEPY_END_DEVICE = 4;
+  EMBER_MOBILE_END_DEVICE = 5;
+}
+
+enum EmberPowerMode {
+  EMBER_TX_POWER_MODE_DEFAULT = 0;
+  EMBER_TX_POWER_MODE_BOOST = 1;
+  EMBER_TX_POWER_MODE_ALTERNATE = 2;
+  EMBER_TX_POWER_MODE_BOOST_AND_ALTERNATE = 3; // 1 | 2
+}
+
+message BridgeCommand {
+  // type ==  "BridgeCommand"
+  required string type = 1;
+
+  // AFAICT command_id is a unique id that's used to match requests
+  // and responses.
+  required int command_id = 2;
+  required string bridge_address = 3;
+  required AddDeviceEncryptionKey json_payload = 4;
+  required float timestamp = 5;
+}
+
+
+// Possible bridge commands = ['add_device_encryption_key', 'leave',
+// 'form', 'reboot', 'restart', 'set_cloud_log_level']
+message AddDeviceEncryptionKey {
+  // 'add_device_encryption_key',
+  required string name = 1;
+  message Params {
+    // 'device_address': device.device_address,
+    required bytes device_address = 1;
+    // 'encryption_key': pending_claims[device.hardware_xor]
+    required bytes encryption_key = 2;
+  };
+  required Params params = 2;
+}
+
+
+// The little printer (barringer) device type is 0x01.
+enum LittlePrinterCommand {
+  set_delivery_and_print = 0x0001;
+  set_delivery = 0x0002;
+  set_delivery_and_print_no_face = 0x0011;
+  set_delivery_no_face = 0x0012;
+  set_personality = 0x0102;
+  set_personality_with_message = 0x0101;
+  set_quip = 0x0202;
+  firmware_update = 0xf000;
+}
+
+enum LittlePrinterCommandResponse {
+  success = 0;
+  eui64_not_found = 0x01;
+  failed_network = 0x02;
+  invalid_sequence = 0x20;
+  busy = 0x30;
+  invalid_size = 0x80;
+  invalid_devicetype = 0x81;
+  filesystem_error = 0x82;
+  filesystem_invalid_id = 0x90;
+  filesystem_no_free_filehandles = 0x91;
+  filesystem_write_error = 0x92;
+  bridge_error = 0xff;
+}

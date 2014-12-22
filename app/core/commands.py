@@ -37,13 +37,13 @@ def add_device_encryption_key(bridge, device):
 	for c in claim_codes:
 		hw, key = process_claim_code(c)
 		pending_claims[hw] = key
-	
+
 	if not pending_claims.has_key(device.hardware_xor):
 		print "Device %r %r" % (device.device_address, device.hardware_xor)
 		for hw, key in pending_claims.items():
 			print "Pending claim %r %r" % (hw, key)
 		raise Exception("No pending claim for device")
-	
+
 	payload = {
 		'name': 'add_device_encryption_key',
 		'params': {
@@ -51,17 +51,17 @@ def add_device_encryption_key(bridge, device):
 			'encryption_key': pending_claims[device.hardware_xor]
 		}
 	}
-	
+
 	command = BridgeCommand(
 		bridge_address=bridge.bridge_address,
 		json_payload=json.dumps(payload),
 		timestamp=datetime.utcnow(),
 		state=u'ready'
 	)
-	
+
 	db.session.add(command)
 	db.session.commit()
-	
+
 	return command
 
 def set_delivery_and_print_payload(file_id, png_fn, html=None):
@@ -80,7 +80,7 @@ def set_delivery_and_print_payload(file_id, png_fn, html=None):
     #       - append_printer_control_header (a bunch o bytes)
     #       - UC05 controls <cccccccc
     #   - encode_image_region
-    
+
     # device type c, reserved byte c,
     # command_name <H (short), file_id <L (long),
     # unimplemented CRC (long is zero)
@@ -107,15 +107,16 @@ def set_delivery_and_print_payload(file_id, png_fn, html=None):
     printer_data = struct.pack("<8B", 0x1b, 0x2a, n1, n2, n3, 0, 0, 48)
     header_region = struct.pack("<BI", 0, len(printer_control) + len(printer_data))
     header_region += printer_control + printer_data
-    
+
     # payload including the header
     payload = struct.pack("<IB", len(header_region) + len(encoded_image) + 1, 0)
     payload += header_region + encoded_image
-    
+
     entire_payload = command_header + struct.pack("<I", len(payload)) + payload
-    
+
     return entire_payload
-    
+
+
 def set_delivery_and_print(device_address, html=None):
     command = DeviceCommand(
         device_address=device_address,
