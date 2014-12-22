@@ -75,6 +75,8 @@ def decode_message(data):
     else:
         return messages.UnknownEvent(data)
 
+    assert False, "never reached"
+
 
 def _decode_bridge_event(data):
     """Decodes a single bridge event from data.
@@ -84,8 +86,8 @@ def _decode_bridge_event(data):
     try:
         name = data['json_payload']['name']
         payload = data['json_payload']
-    except KeyError:
-        return messages.UnknownEvent(data)
+    except KeyError as e:
+        return messages.MalformedEvent(data, 'Missing field {}'.format(e))
 
     if name == 'power_on':
         return messages.PowerOn(
@@ -142,8 +144,10 @@ def _decode_device_event(data):
         payload = data['binary_payload']
         device_address = data['device_address']
         binary = base64.b64decode(payload)
-    except KeyError:
-        return messages.UnknownEvent(data)
+    except KeyError as e:
+        return messages.MalformedEvent(data, 'Missing field {}'.format(e))
+    except TypeError as e:
+        return messages.MalformedEvent(data, 'Invalid base64 {}'.format(e))
 
     offset = 0
     code, command_id, payload_length = \
@@ -240,6 +244,7 @@ def _decode_device_event(data):
     else:
         return messages.UnknownEvent(data)
 
+    assert False, "never reached"
 
 def _decode_bridge_command_response(data):
     """Decodes a BridgeCommandResponse.
