@@ -2,6 +2,9 @@
 
 $ bin/gunicorn -k flask_sockets.worker sirius.server:app -b 0.0.0.0:5002 -w 1
 """
+# Temporary hack until gevent fixes
+# https://github.com/gevent/gevent/issues/477.
+import _gevent_polyfill
 
 import logging
 import flask
