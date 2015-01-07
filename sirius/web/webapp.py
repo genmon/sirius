@@ -7,15 +7,22 @@ import logging
 import flask
 import flask_sockets
 from flask.ext import bootstrap
-from flask.ext import sqlalchemy
 
 from sirius.protocol import protocol_loop
 from sirius import stats
 from sirius import config
 
+ # Import models so they get picked up for migrations.
+from sirius.models import db
+from sirius.models import hardware
+from sirius.models import user
+
+from sirius.web import landing
+from sirius.web import twitter
+
+
 logger = logging.getLogger(__name__)
 bootstrap = bootstrap.Bootstrap()
-db = sqlalchemy.SQLAlchemy()
 sockets = flask_sockets.Sockets()
 
 
@@ -24,16 +31,16 @@ def create_app(config_name):
     app.config.from_object(config.config[config_name])
     config.config[config_name].init_app(app)
 
+    # Configure various plugins and logging
     bootstrap.init_app(app)
-    db.init_app(app)
+    db.db.init_app(app)
     sockets.init_app(app)
-
     logging.basicConfig(level=logging.DEBUG if app.debug else logging.INFO)
 
-    @app.route('/_/stats')
-    def showstats():
-        "Expose some trivial stats"
-        return stats.as_text()
+    # Register blueprints
+    app.register_blueprint(stats.blueprint)
+    app.register_blueprint(landing.blueprint)
+    app.register_blueprint(twitter.blueprint)
 
     @sockets.route('/api/v1/connection')
     def api_v1_connection(ws):
