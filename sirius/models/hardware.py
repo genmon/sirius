@@ -38,7 +38,6 @@ class Printer(db.Model):
         return 'Printer {}, xor: {}, owner: {}'.format(
             self.device_address, self.hardware_xor, self.owner_id)
 
-
     @classmethod
     def phone_home(cls, device_address):
         """This gets called every time the in-memory machinery thinks it has
@@ -75,30 +74,9 @@ class Printer(db.Model):
 
 
 class ClaimCode(db.Model):
-    """Printer and claim codes are joined over the hardware xor. There are
-    several possible orders of creating the DB entries (dependent on
-    whether the user claims a device before it calls home or the other
-    way round).
-
-    a.
-      1. printer calls home with xor A
-      2. claim code created with xor A code B
-    b.
-      1. claim code created with xor A code B
-      2. printer calls home with xor A
-    c.
-      1. claim code created with xor A code B
-      2. claim code created with xor A code C
-      3. printer calls home with xor A
-
-    The join is "loose" i.e. in general the order doesn't matter
-    unless a printer is claimed twice. In That case the newest claim
-    code has to be used (case c).
-
-    Note also that claim codes are meant to be temporary. I.e. once a
-    printer has been claimed the claim code becomes irrelevant and
-    only the printer ownership counts. We don't enforce a valid time
-    window for claim codes though.
+    """Printer and claim codes are joined over the hardware xor. Claim
+    codes are meant to have a temporary life time though we're not
+    treating them like this for now.
     """
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
@@ -108,6 +86,7 @@ class ClaimCode(db.Model):
 
     def __repr__(self):
         return '<ClaimCode xor: {} code: {}>'.format(self.hardware_xor, self.claim_code)
+
 
 class DeviceLog(db.Model):
     """The device log Recorde state changes in the bridge and connected
