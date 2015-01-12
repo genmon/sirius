@@ -1,8 +1,10 @@
 import flask
 from flask.ext import oauth
+from flask.ext import login
 
 from sirius.models import user
 from sirius.models.db import db
+
 
 blueprint = flask.Blueprint('twitter_oauth', __name__)
 oauth_app = oauth.OAuth()
@@ -26,7 +28,7 @@ def get_twitter_token(token=None):
 
 
 @blueprint.route('/twitter/login')
-def login():
+def twitter_login():
     # Clear token, see https://github.com/mitsuhiko/flask-oauth/issues/48:
     flask.session.pop('twitter_token', None)
     flask.session.pop('twitter_screen_name', None)
@@ -39,32 +41,46 @@ def login():
 @twitter.authorized_handler
 def oauth_authorized(response):
     next_url = flask.request.args.get('next') or '/'
+
     if response is None:
         flask.flash(u"Twitter didn't authorize our sign-in request.")
         return flask.redirect(next_url)
 
-    flask.session['twitter_token'] = (
+    return process_authorization(
         response['oauth_token'],
         response['oauth_token_secret'],
+        response['screen_name'],
+        next_url,
     )
-    flask.session['twitter_screen_name'] = response['screen_name']
 
-    oauth = db.session.query(user.TwitterOAuth).filter_by(
-        screen_name=response['screen_name'],
+
+def process_authorization(token, token_secret, screen_name, next_url):
+    """Process the incoming twitter oauth data. Validation has already
+    succeeded at this point and we're just doing the book-keeping."""
+
+    flask.session['twitter_token'] = (token, token_secret)
+    flask.session['twitter_screen_name'] = screen_name
+
+    oauth = user.TwitterOAuth.query.filter_by(
+        screen_name=screen_name,
     ).first()
 
     # Create local user model for keying resources (e.g. claim codes)
     # if we haven't seen this twitter user before.
     if oauth is None:
         new_user = user.User(
-            username=response['screen_name'],
+            username=screen_name,
         )
-        db.session.add(new_user)
-        db.session.add(user.TwitterOAuth(
+        oauth = user.TwitterOAuth(
             user=new_user,
-            screen_name=response['screen_name'],
-            token=response['oauth_token'],
-        ))
+            screen_name=screen_name,
+            token=token,
+        )
+
+        db.session.add(new_user)
+        db.session.add(oauth)
         db.session.commit()
+
+    login.login_user(oauth.user)
 
     return flask.redirect(next_url)

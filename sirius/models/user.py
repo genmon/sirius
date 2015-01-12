@@ -19,6 +19,13 @@ class User(db.Model):
     def __repr__(self):
         return 'User {}'.format(self.username)
 
+    # Flask-login interface:
+    def is_active(self):
+        return True
+
+    def get_id(self):
+        return self.id
+
     def claim_printer(self, claim_code):
         """Claiming can happen before the printer "calls home" for the first
         time so we need to be able to deal with that."""

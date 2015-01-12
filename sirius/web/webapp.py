@@ -22,6 +22,7 @@ from sirius.models import user
 
 from sirius.web import landing
 from sirius.web import twitter
+from sirius.web import login
 
 
 logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ def create_app(config_name):
     bootstrap.init_app(app)
     db.db.init_app(app)
     sockets.init_app(app)
+    login.manager.init_app(app)
     logging.basicConfig(level=logging.DEBUG if app.debug else logging.INFO)
 
     # Register blueprints
