@@ -23,6 +23,8 @@ from sirius.models import user
 from sirius.web import landing
 from sirius.web import twitter
 from sirius.web import login
+from sirius.web import printer_print
+from sirius.web import printer_overview
 
 
 logger = logging.getLogger(__name__)
@@ -46,6 +48,8 @@ def create_app(config_name):
     app.register_blueprint(stats.blueprint)
     app.register_blueprint(landing.blueprint)
     app.register_blueprint(twitter.blueprint)
+    app.register_blueprint(printer_overview.blueprint)
+    app.register_blueprint(printer_print.blueprint)
 
     @sockets.route('/api/v1/connection')
     def api_v1_connection(ws):
