@@ -9,7 +9,6 @@ from sirius.models.db import db
 from sirius.models import hardware
 
 class User(db.Model):
-    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
@@ -50,7 +49,6 @@ class User(db.Model):
 
 
 class TwitterOAuth(db.Model):
-    __tablename__ = 'twitter_oauth'
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))

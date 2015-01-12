@@ -9,7 +9,6 @@ class Bridge(db.Model):
     """Bridges are not really interesting for users other than that they
     are connected so we don't store ownership for them.
     """
-    __tablename__ = 'bridge'
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     bridge_address = db.Column(db.String, primary_key=True)
@@ -22,7 +21,6 @@ class Printer(db.Model):
     Note that this model is only ever created by a printer calling
     home. Users create a ClaimCode row.
     """
-    __tablename__ = 'printer'
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     device_address = db.Column(db.String)
@@ -101,7 +99,6 @@ class ClaimCode(db.Model):
     window for claim codes though.
     """
     id = db.Column(db.Integer, primary_key=True)
-    __tablename__ = 'claim_code'
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     by_id = db.Column(db.ForeignKey('user.id'))
     hardware_xor = db.Column(db.Integer)
@@ -114,7 +111,6 @@ class DeviceLog(db.Model):
     """The device log Recorde state changes in the bridge and connected
     devices. We may selectively expose some of these to the user.
     """
-    __tablename__ = 'device_log'
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     device_address = db.Column(db.String)
