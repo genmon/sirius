@@ -30,6 +30,8 @@ class Printer(db.Model):
     # hardware xor) a claim to a printer. The fields start out as
     # NULL.
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    owner = db.relationship('User', backref=db.backref('printers', lazy='dynamic'))
+
     used_claim_code = db.Column(db.String, nullable=True)
 
     def __repr__(self):

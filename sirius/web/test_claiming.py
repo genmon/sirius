@@ -29,7 +29,7 @@ class TestClaiming(testing.TestCase):
         db.session.commit()
         printer = hardware.Printer.query.first()
 
-        self.assertEqual(printer.owner_id, self.testuser.id)
+        self.assertEqual(printer.owner, self.testuser)
 
     def test_printer_phone_home_first(self):
         hardware.Printer.phone_home('000d6f000273ce0b')
@@ -37,4 +37,4 @@ class TestClaiming(testing.TestCase):
         db.session.commit()
         printer = hardware.Printer.query.first()
 
-        self.assertEqual(printer.owner_id, self.testuser.id)
+        self.assertEqual(printer.owner, self.testuser)
