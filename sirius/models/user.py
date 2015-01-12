@@ -26,6 +26,9 @@ class User(db.Model):
     def get_id(self):
         return self.id
 
+    def is_authenticated(self):
+        return True
+
     def claim_printer(self, claim_code):
         """Claiming can happen before the printer "calls home" for the first
         time so we need to be able to deal with that."""

@@ -21,6 +21,7 @@ class TestClaiming(testing.TestCase):
         return app
 
     def test_oauth_authorized(self):
+        self.assertEqual(login.current_user.is_authenticated(), False)
         twitter.process_authorization(
             'token',
             'secret_token',
@@ -28,3 +29,4 @@ class TestClaiming(testing.TestCase):
             '/next_url',
         )
         self.assertEqual(login.current_user.username, 'test_screen_name')
+        self.assertEqual(login.current_user.is_authenticated(), True)
