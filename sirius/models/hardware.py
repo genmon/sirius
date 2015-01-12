@@ -1,5 +1,6 @@
+from sirius.coding import bitshuffle
+
 from sirius.models.db import db
-from sirius.models import user
 
 
 class Bridge(db.Model):
@@ -23,13 +24,52 @@ class Printer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime)
     device_address = db.Column(db.String)
-    hardware_xor = db.Column(db.String)
+    hardware_xor = db.Column(db.Integer)
 
     # Update the following fields after we connected (i.e. joined over
     # hardware xor) a claim to a printer. The fields start out as
     # NULL.
-    owner = db.Column(db.Integer, db.ForeignKey(user.User.id), nullable=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     used_claim_code = db.Column(db.String, nullable=True)
+
+    def __repr__(self):
+        return 'Printer {}, xor: {}, owner: {}'.format(
+            self.device_address, self.hardware_xor, self.owner_id)
+
+
+    @classmethod
+    def phone_home(cls, device_address):
+        """This gets called every time the in-memory machinery thinks it has
+        seen a printer for the first time round, e.g. after a
+        re-connect of the websocket.
+        """
+        printer = cls.query.filter_by(device_address=device_address).first()
+        hardware_xor = bitshuffle.hardware_xor_from_device_address(device_address)
+
+        if printer is not None:
+            return
+
+        printer = cls(
+            device_address=device_address,
+            hardware_xor=hardware_xor,
+            owner_id=None,
+            used_claim_code=None,
+        )
+        db.session.add(printer)
+
+        # Connect hardware xor and printer if there is a claim code
+        # waiting.
+        claim_code_query = ClaimCode.query.filter_by(hardware_xor=hardware_xor)
+        claim_code = claim_code_query.first()
+        if claim_code is None:
+            return
+
+        assert claim_code_query.count() == 1, \
+            "claim code hardware xor collision: {}".format(hardware_xor)
+
+        printer.owner_id = claim_code.by_id
+        printer.used_claim_code = claim_code.claim_code
+        db.session.add(printer)
 
 
 class ClaimCode(db.Model):
@@ -61,10 +101,12 @@ class ClaimCode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     __tablename__ = 'claim_code'
     created = db.Column(db.DateTime)
-    by = db.Column(db.ForeignKey(user.User.id))
-    hardware_xor = db.Column(db.String)
+    by_id = db.Column(db.ForeignKey('user.id'))
+    hardware_xor = db.Column(db.Integer)
     claim_code = db.Column(db.String)
 
+    def __repr__(self):
+        return '<ClaimCode xor: {} code: {}>'.format(self.hardware_xor, self.claim_code)
 
 class DeviceLog(db.Model):
     """The device log Recorde state changes in the bridge and connected
