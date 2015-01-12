@@ -1,6 +1,8 @@
 """User models. Login only via twitter for now to avoid the whole
 forgot-password/reset-password dance.
 """
+import datetime
+
 from sirius.coding import claiming
 
 from sirius.models.db import db
@@ -9,6 +11,8 @@ from sirius.models import hardware
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
+    created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
     # username can't be unique because we may have multiple identity
     # providers. For now we just copy the  twitter handle.
     username = db.Column(db.String)
@@ -48,6 +52,7 @@ class User(db.Model):
 class TwitterOAuth(db.Model):
     __tablename__ = 'twitter_oauth'
     id = db.Column(db.Integer, primary_key=True)
+    created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
     screen_name = db.Column(db.String, unique=True)
     token = db.Column(db.String, unique=True)

@@ -1,3 +1,5 @@
+import datetime
+
 from sirius.coding import bitshuffle
 
 from sirius.models.db import db
@@ -9,7 +11,7 @@ class Bridge(db.Model):
     """
     __tablename__ = 'bridge'
     id = db.Column(db.Integer, primary_key=True)
-    created = db.Column(db.DateTime)
+    created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     bridge_address = db.Column(db.String, primary_key=True)
 
 
@@ -22,7 +24,7 @@ class Printer(db.Model):
     """
     __tablename__ = 'printer'
     id = db.Column(db.Integer, primary_key=True)
-    created = db.Column(db.DateTime)
+    created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     device_address = db.Column(db.String)
     hardware_xor = db.Column(db.Integer)
 
@@ -100,7 +102,7 @@ class ClaimCode(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     __tablename__ = 'claim_code'
-    created = db.Column(db.DateTime)
+    created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     by_id = db.Column(db.ForeignKey('user.id'))
     hardware_xor = db.Column(db.Integer)
     claim_code = db.Column(db.String)
@@ -114,7 +116,7 @@ class DeviceLog(db.Model):
     """
     __tablename__ = 'device_log'
     id = db.Column(db.Integer, primary_key=True)
-    created = db.Column(db.DateTime)
+    created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     device_address = db.Column(db.String)
 
     # json dict of events dispatched on VALID_STATES. E.g.
