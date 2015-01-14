@@ -7,7 +7,7 @@
 {% if not my_printers %}
 <div>
 	No printers yet -
-	<a href="{{ url_for('printer_overview.claim',
+	<a href="{{ url_for('landing.claim',
                          user_id=current_user.id,
                          username=current_user.username) }}">
 		claim one here

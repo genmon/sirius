@@ -21,3 +21,14 @@ def overview():
         'overview.html',
         my_printers=my_printers,
     )
+
+
+@blueprint.route('/<int:user_id>/<username>/claim')
+@login.login_required
+def claim(user_id, username):
+    assert user_id == login.current_user.id
+    assert username == login.current_user.username
+
+    return flask.render_template(
+        'claim.html',
+    )
