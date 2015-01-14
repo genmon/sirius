@@ -1,5 +1,4 @@
-sirius
-======
+# Using Sirius
 
 First point your bridge at your laptop, port 5002 (or similar).
 
@@ -8,6 +7,29 @@ Then run:
 ```console
 $ bin/gunicorn -k flask_sockets.worker sirius.server:app -b 0.0.0.0:5002 -w 1
 ```
+
+Navigate browser to http://127.0.0.1:5002/
+
+
+## Creating fake printers
+
+Resetting the actual hardware all the time gets a bit tiresome so
+there's a fake command that creates unclaimed fake little printers:
+
+```console
+$ ./manage.py fake printer
+[...]
+Created printer
+     address: 602d48d344b746f5
+       DB id: 8
+      secret: 66a596840f
+  claim code: 5oop-e9dp-hh7v-fjqo
+```
+
+Functionally there is no difference between resetting and creating a
+new printer so we don't distinguish between the two.
+
+# Sirius Architecture
 
 ## Layers
 
@@ -59,21 +81,3 @@ We are also deriving this hardware xor when a device calls home with
 an "encryption_key_required". In that case we connect the device to
 the claim code via the hardware-xor and send back the correct
 encryption key.
-
-## Creating fake printers
-
-Resetting the actual hardware all the time gets a bit tiresome so
-there's a fake command that creates unclaimed fake little printers:
-
-```console
-$ ./manage.py fake printer
-[...]
-Created printer
-     address: 602d48d344b746f5
-       DB id: 8
-      secret: 66a596840f
-  claim code: 5oop-e9dp-hh7v-fjqo
-```
-
-Functionally there is no difference between resetting and creating a
-new printer so we don't distinguish between the two.
