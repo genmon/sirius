@@ -7,7 +7,7 @@ import collections
 ClaimedDevice = collections.namedtuple('ClaimedDevice', 'address hardware_xor claim_code')
 claimed_devices = {
     0x73c164: ClaimedDevice(
-        '000d6f000273ce0b',
+        '000d6f000273c164',
         0x73c164,
         'n5ry-p6x6-kth7-7hc4',
     ),

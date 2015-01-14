@@ -56,6 +56,9 @@ CLAIMCODE_BASE32_DICT = {
   'Z': 0x1F
 }
 
+CC_ENCODE_LIST = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+                  'j', 'k', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']
+
 class InvalidClaimCode(Exception):
     pass
 
@@ -153,13 +156,23 @@ def key_from_claim_code(claim_code):
     return key
 
 
-# ~~~~
-# Test
-# ~~~~
+def encode(device, secret):
+    device = device & 0xffffff
+    secret = secret & 0xffffffffff
 
-if __name__ == '__main__':
-    claim_code = '6xwh-441j-8115-zyrh'
-    expected_encryption_key = b'F7D9bmztHV32+WJScGZR0g==\n'
-    _, calculated_encryption_key = process_claim_code(claim_code)
-    print("Expected:   %s" % expected_encryption_key)
-    print("Calculated: %s" % calculated_encryption_key)
+    value = device | (secret << 24)
+    data = bytearray(struct.pack("<Q", value))
+    crc = crc16(data, 0xffff)
+    cc = value | (crc << 64)
+
+    text = ''
+
+    i = 16
+    while i> 0:
+        text = CC_ENCODE_LIST[cc & 0x1f] + text
+        cc = cc >> 5
+        if (i==5) or (i==9) or (i==13):
+            text = '-' + text
+        i -= 1
+
+    return text
