@@ -11,9 +11,11 @@ class Config:
 		pass
 
 class TestConfig(Config):
-        DEBUG = True
+        DEBUG = False
 	SQLALCHEMY_DATABASE_URI = 'sqlite://'
-
+        TESTING = True
+        WTF_CSRF_ENABLED = False
+        LOGIN_DISABLED = False
 
 class DevelopmentConfig(Config):
 	DEBUG = True

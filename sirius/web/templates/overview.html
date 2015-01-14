@@ -17,7 +17,10 @@
 {% for printer in my_printers %}
 <ul>
 	<li>
-		<a href="{{ url_for('printer_print.printer_print') }}">{{ printer.device_name }}</a>
+		<a href="{{ url_for('printer_print.printer_print',
+                               user_id=current_user.id,
+                               username=current_user.username) }}">
+			{{ printer.device_address }}</a>
 	</li>
 </ul>
 {% endfor %}
