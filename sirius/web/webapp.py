@@ -55,5 +55,5 @@ def create_app(config_name):
     def api_v1_connection(ws):
         protocol_loop.accept(ws)
 
-    logger.info('Creating app.')
+    logger.debug('Creating app.')
     return app

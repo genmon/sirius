@@ -9,6 +9,7 @@ if os.path.exists('.env'):
         os.environ[name] = value
 
 from sirius.web import webapp
+from sirius.fake import commands as fake_commands
 from flask.ext.script import Manager, Shell
 from flask.ext.migrate import Migrate, MigrateCommand
 
@@ -20,6 +21,7 @@ def make_shell_context():
     return dict(app=app, db=webapp.db)
 manager.add_command("shell", Shell(make_context=make_shell_context))
 manager.add_command('db', MigrateCommand)
+manager.add_command('fake', fake_commands.fake_manager)
 
 
 @manager.command
