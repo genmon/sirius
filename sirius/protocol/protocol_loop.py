@@ -197,6 +197,11 @@ def _accept_step(x, bridge_state):
             logger.error('Unexpected response (command_id not known) %r', x)
             return
 
+    elif type(x) == messages.DeviceCommandResponse:
+        if x.command_id not in bridge_state.pending_commands:
+            logger.error('Unexpected response (command_id not known) %r', x)
+            return
+
         # TODO: some commands need special handling. E.g. what happens
         # on invalid claim codes? How do we communicate send-errors or
         # timeouts back to the user?

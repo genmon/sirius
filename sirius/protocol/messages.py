@@ -55,6 +55,13 @@ BridgeCommandResponse = namedtuple('BridgeCommandResponse', [
     'timestamp',
 ])
 
+DeviceCommandResponse = namedtuple('DeviceCommandResponse', [
+    'bridge_address',
+    'command_id',
+    'return_code',
+    'timestamp',
+])
+
 SetDeliveryAndPrint = namedtuple('SetDeliveryAndPrint', [
     'device_address',
     'pixels', # 384 pixels wide

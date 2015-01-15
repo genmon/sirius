@@ -69,6 +69,9 @@ def decode_message(data):
     elif data['type'] == 'BridgeCommandResponse':
         return _decode_bridge_command_response(data)
 
+    elif data['type'] == 'DeviceCommandResponse':
+        return _decode_device_command_response(data)
+
     elif data['type'] == 'DeviceEvent':
         return _decode_device_event(data)
 
@@ -252,6 +255,18 @@ def _decode_bridge_command_response(data):
     :param data: A python dictionary, as decoded from json.
     """
     return messages.BridgeCommandResponse(
+        bridge_address=data['bridge_address'],
+        command_id=data['command_id'],
+        timestamp=data['timestamp'],
+        return_code=data['return_code'],
+    )
+
+def _decode_device_command_response(data):
+    """Decodes a DeviceCommandResponse.
+
+    :param data: A python dictionary, as decoded from json.
+    """
+    return messages.DeviceCommandResponse(
         bridge_address=data['bridge_address'],
         command_id=data['command_id'],
         timestamp=data['timestamp'],
