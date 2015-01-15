@@ -40,7 +40,7 @@ class Base(testing.TestCase):
 class TestClaiming(Base):
 
     def test_claim_first(self):
-        self.testuser.claim_printer('n5ry-p6x6-kth7-7hc4')
+        self.testuser.claim_printer('n5ry-p6x6-kth7-7hc4', 'my test printer')
         hardware.Printer.phone_home('000d6f000273ce0b')
         db.session.commit()
         printer = hardware.Printer.query.first()
@@ -49,7 +49,7 @@ class TestClaiming(Base):
 
     def test_printer_phone_home_first(self):
         hardware.Printer.phone_home('000d6f000273ce0b')
-        self.testuser.claim_printer('n5ry-p6x6-kth7-7hc4')
+        self.testuser.claim_printer('n5ry-p6x6-kth7-7hc4', 'my test printer')
         db.session.commit()
         printer = hardware.Printer.query.first()
 

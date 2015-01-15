@@ -29,7 +29,7 @@ class User(db.Model):
     def is_authenticated(self):
         return True
 
-    def claim_printer(self, claim_code):
+    def claim_printer(self, claim_code, name):
         """Claiming can happen before the printer "calls home" for the first
         time so we need to be able to deal with that."""
 
@@ -38,6 +38,7 @@ class User(db.Model):
             by_id=self.id,
             hardware_xor=hardware_xor,
             claim_code=claim_code,
+            name=name,
         )
         db.session.add(hcc)
 
@@ -55,7 +56,9 @@ class User(db.Model):
         printer.claim_code = claim_code
         printer.hardware_xor = hardware_xor
         printer.owner_id = hcc.by_id
+        printer.name = name
         db.session.add(printer)
+        return printer
 
 
 class TwitterOAuth(db.Model):

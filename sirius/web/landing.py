@@ -54,8 +54,9 @@ def claim(user_id, username):
 
     form = ClaimForm()
     if form.validate_on_submit():
-        login.current_user.claim_printer(form.claim_code.data)
-        db.session.commit()
+        login.current_user.claim_printer(
+            form.claim_code.data,
+            form.printer_name.data)
         return flask.redirect(flask.url_for('.landing'))
 
     return flask.render_template(

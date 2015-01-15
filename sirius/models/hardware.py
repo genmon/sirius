@@ -26,6 +26,9 @@ class Printer(db.Model):
     device_address = db.Column(db.String)
     hardware_xor = db.Column(db.Integer)
 
+    # Name of printer; used for display purposes.
+    name = db.Column(db.String)
+
     # Update the following fields after we connected (i.e. joined over
     # hardware xor) a claim to a printer. The fields start out as
     # NULL.
@@ -69,6 +72,7 @@ class Printer(db.Model):
             "claim code hardware xor collision: {}".format(hardware_xor)
 
         printer.owner_id = claim_code.by_id
+        printer.name = claim_code.name
         printer.used_claim_code = claim_code.claim_code
         db.session.add(printer)
 
@@ -83,6 +87,9 @@ class ClaimCode(db.Model):
     by_id = db.Column(db.ForeignKey('user.id'))
     hardware_xor = db.Column(db.Integer)
     claim_code = db.Column(db.String)
+
+    # Intended name of printer; used for display purposes.
+    name = db.Column(db.String)
 
     def __repr__(self):
         return '<ClaimCode xor: {} code: {}>'.format(self.hardware_xor, self.claim_code)
