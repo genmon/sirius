@@ -4,4 +4,12 @@
 
 {% block page_content %}
 <h1>Printer {{ printer.name }}</h1>
+
+<a href="{{ url_for('printer_print.printer_print',
+               user_id=current_user.id,
+               username=current_user.username,
+               printer_id=printer.id) }}">
+	Print a thing
+</a>
+<h2>Messages</h2>
 {% endblock %}

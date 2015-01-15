@@ -25,6 +25,15 @@
 	</li>
 </ul>
 {% endfor %}
+
+<div>
+	<a href="{{ url_for('landing.claim',
+                         user_id=current_user.id,
+                         username=current_user.username) }}">
+		Claim another printer
+	</a>.
+</div>
+
 {% endif %}
 <h1>Printers of friends</h1>
 {% endblock %}

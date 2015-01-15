@@ -14,6 +14,8 @@ def printer_overview(user_id, username, printer_id):
     assert username == login.current_user.username
 
     printer = hardware.Printer.query.get(printer_id)
+    if printer is None:
+        flask.abort(404)
 
     return flask.render_template(
         'printer_overview.html',
