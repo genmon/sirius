@@ -1,7 +1,6 @@
 import flask
 from flask.ext import login
 
-from sirius.models import user
 from sirius.models import hardware
 
 blueprint = flask.Blueprint('printer_overview', __name__)

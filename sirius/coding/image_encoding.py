@@ -2,7 +2,6 @@ from PIL import Image
 from itertools import groupby
 import struct
 import io
-import time
 import tempfile
 
 WHITE = 0

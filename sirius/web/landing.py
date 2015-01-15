@@ -4,7 +4,6 @@ import wtforms
 from flask.ext import login
 
 from sirius.coding import claiming
-from sirius.models.db import db
 
 blueprint = flask.Blueprint('landing', __name__)
 

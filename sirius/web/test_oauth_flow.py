@@ -2,7 +2,6 @@ from flask.ext import testing
 from flask.ext import login
 
 from sirius.models.db import db
-from sirius.models import user
 from sirius.web import webapp
 from sirius.web import twitter
 

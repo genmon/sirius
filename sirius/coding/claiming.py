@@ -1,5 +1,5 @@
 from .crc16 import crc16
-from Crypto.Cipher import AES, XOR
+from Crypto.Cipher import AES
 
 import struct
 import base64

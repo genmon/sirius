@@ -30,7 +30,6 @@ class CodingCase(unittest.TestCase):
 
     def test_coding_from_real_world(self):
         device_address = '000d6f000273c164'
-        xor = bitshuffle.hardware_xor_from_device_address(device_address)
         # only the last 24 bits of the device address are used
         device_address_int = int(device_address, 16) & 0xffffff
         # secret only known to printer and claim code
