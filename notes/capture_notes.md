@@ -108,3 +108,10 @@ itself is online.
     - claim code (entered by user)
     - address
 - users
+
+
+# What happens when we send down an illegal print command:
+
+DEBUG:sirius.protocol.protocol_loop:Received UnknownEvent(raw_dict={u'device_address': u'000d6f000273ce0b', u'timestamp': 1421336620.588616, u'transfer_time': 3.43, u'bridge_address': u'000d6f0001b3719d', u'return_code': 144, u'rssi_stats': [-19, -19, -19], u'type': u'DeviceCommandResponse', u'command_id': 0}).
+
+Note the `return_code`.

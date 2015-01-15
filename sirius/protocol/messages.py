@@ -56,10 +56,12 @@ BridgeCommandResponse = namedtuple('BridgeCommandResponse', [
 ])
 
 SetDeliveryAndPrint = namedtuple('SetDeliveryAndPrint', [
+    'device_address',
     'pixels', # 384 pixels wide
 ])
 
 SetDelivery = namedtuple('SetDelivery', [
+    'device_address',
     'pixels',
 ])
 

@@ -2,6 +2,7 @@
 dictionaries that can be encoded directly as json.
 """
 import struct
+import base64
 
 from sirius.coding import image_encoding
 from sirius.coding import claiming
@@ -86,16 +87,18 @@ def encode_bridge_command(bridge_address, command, command_id, timestamp):
     elif type(command) == messages.SetDeliveryAndPrint:
         pixel_count, pixels = image_encoding.rle_image(command.pixels)
         return make({
-            'binary_payload': _encode_printer_message(
-                0x1, pixel_count, pixels, command_id),
+            'binary_payload': base64.b64encode(_encode_printer_message(
+                0x1, pixel_count, pixels, command_id)),
+            'device_address': command.device_address,
             'type': 'DeviceCommand',
         })
 
     elif type(command) == messages.SetDelivery:
         pixel_count, pixels = image_encoding.rle_image(command.pixels)
         return make({
-            'binary_payload': _encode_printer_message(
-                0x2, pixel_count, pixels, command_id),
+            'binary_payload': base64.b64encode(_encode_printer_message(
+                0x2, pixel_count, pixels, command_id)),
+            'device_address': command.device_address,
             'type': 'DeviceCommand',
         })
 
