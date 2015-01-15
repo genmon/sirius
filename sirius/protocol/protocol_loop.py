@@ -52,6 +52,7 @@ def send_message(device_address, message):
 
     # Send data through the websocket.
     command = encoders.encode_bridge_command(
+        bridge_state.address,
         message,
         bridge_state.next_command_id,
         '0',

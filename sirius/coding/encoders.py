@@ -53,9 +53,10 @@ def _encode_printer_message(command, pixel_count, rle_image, print_id):
     return entire_payload
 
 
-def encode_bridge_command(command, command_id, timestamp):
+def encode_bridge_command(bridge_address, command, command_id, timestamp):
     """Encodes a BridgeCommand into a dict that can be serialized as json.
 
+    :param bridge_address: The hex bridge address.
     :param command: A command from messages.py
     :param command_id: A unique id that is used to ack the command.
     :param timestamp: unix timestamp. Unclear why this is necessary.
@@ -63,7 +64,7 @@ def encode_bridge_command(command, command_id, timestamp):
     def make(extra):
         base = {
             'type': 'BridgeCommand',
-            'bridge_address': command.bridge_address,
+            'bridge_address': bridge_address,
             'command_id': command_id,
             # Apparently in ISO format?
             'timestamp': timestamp,
@@ -83,14 +84,20 @@ def encode_bridge_command(command, command_id, timestamp):
         })
 
     elif type(command) == messages.SetDeliveryAndPrint:
-        pixel_count, pixels = image_encoding.rle(command.pixels)
-        return make({'binary_payload': _encode_printer_message(
-            0x1, pixel_count, pixels, command_id)})
+        pixel_count, pixels = image_encoding.rle_image(command.pixels)
+        return make({
+            'binary_payload': _encode_printer_message(
+                0x1, pixel_count, pixels, command_id),
+            'type': 'DeviceCommand',
+        })
 
     elif type(command) == messages.SetDelivery:
-        pixel_count, pixels = image_encoding.rle(command.pixels)
-        return make({'binary_payload': _encode_printer_message(
-            0x2, pixel_count, pixels, command_id)})
+        pixel_count, pixels = image_encoding.rle_image(command.pixels)
+        return make({
+            'binary_payload': _encode_printer_message(
+                0x2, pixel_count, pixels, command_id),
+            'type': 'DeviceCommand',
+        })
 
     else:
         assert False, "unknown command type: {}".format(command)
