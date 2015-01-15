@@ -53,7 +53,7 @@ class User(db.Model):
         assert printer_query.count() == 1, \
             "hardware xor collision: {}".format(hardware_xor)
 
-        printer.claim_code = claim_code
+        printer.used_claim_code = claim_code
         printer.hardware_xor = hardware_xor
         printer.owner_id = hcc.by_id
         printer.name = name

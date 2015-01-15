@@ -53,7 +53,8 @@ def create_app(config_name):
 
     @sockets.route('/api/v1/connection')
     def api_v1_connection(ws):
-        protocol_loop.accept(ws)
+        with app.app_context():
+            protocol_loop.accept(ws)
 
     logger.debug('Creating app.')
     return app

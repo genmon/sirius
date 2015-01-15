@@ -13,7 +13,8 @@ import logging
 from sirius.coding import encoders
 from sirius.coding import decoders
 from sirius import stats
-from sirius import database
+
+from sirius.models import hardware
 
 logger = logging.getLogger(__name__)
 
@@ -140,6 +141,7 @@ def _accept_step(x, bridge_state):
     :param bridge_state: The BridgeState for this connection
     """
     if type(x) == messages.DeviceConnect:
+        hardware.Printer.phone_home(x.device_address)
         bridge_state.connected_devices.add(x.device_address)
 
     elif type(x) == messages.DeviceDisconnect:
@@ -149,10 +151,11 @@ def _accept_step(x, bridge_state):
         pass # TODO - write log to a place
 
     elif type(x) == messages.EncryptionKeyRequired:
+        hardware.Printer.phone_home(x.device_address)
         bridge_state.connected_devices.add(x.device_address)
 
-        claimed_device = database.get_claim_code(x.hardware_xor)
-        if claimed_device is None:
+        claim_code = hardware.Printer.get_claim_code(x.device_address)
+        if claim_code is None:
             # It's OK to have an unclaimed device, we just ignore it
             # for now.
             stats.inc('unclaimed.encryption_key_required.count')
@@ -161,12 +164,13 @@ def _accept_step(x, bridge_state):
         add_key = messages.AddDeviceEncryptionKey(
             bridge_address=x.bridge_address,
             device_address=x.device_address,
-            claim_code=claimed_device.claim_code,
+            claim_code=claim_code,
         )
 
         send_message(x.device_address, add_key)
 
     elif type(x) == messages.DeviceHeartbeat:
+        hardware.Printer.phone_home(x.device_address)
         bridge_state.connected_devices.add(x.device_address)
 
     elif type(x) == messages.PowerOn:

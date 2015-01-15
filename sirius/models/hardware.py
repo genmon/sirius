@@ -60,6 +60,7 @@ class Printer(db.Model):
             used_claim_code=None,
         )
         db.session.add(printer)
+        db.session.commit()
 
         # Connect hardware xor and printer if there is a claim code
         # waiting.
@@ -75,6 +76,17 @@ class Printer(db.Model):
         printer.name = claim_code.name
         printer.used_claim_code = claim_code.claim_code
         db.session.add(printer)
+        db.session.commit()
+
+    @classmethod
+    def get_claim_code(cls, device_address):
+        """Find and return a claim code."""
+        printer = cls.query.filter_by(device_address=device_address).first()
+        if printer is None:
+            return None
+        db.session.commit()
+
+        return printer.used_claim_code
 
 
 class ClaimCode(db.Model):

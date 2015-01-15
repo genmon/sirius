@@ -4,7 +4,13 @@ Run like:
 
 $ bin/nosetests sirius/
 """
-import unittest
+from flask.ext import testing
+
+# TODO: It's a bit ugly that the protocol loop depends on the flask setup
+# for database access but it's the easiest solution for now.
+from sirius.web import webapp
+from sirius.models.db import db
+from sirius.models import hardware
 
 from sirius.protocol import messages
 from sirius.protocol import protocol_loop
@@ -78,6 +84,21 @@ m_command_response = messages.BridgeCommandResponse(
     timestamp=0,
 )
 
+class BaseTest(testing.TestCase):
+
+    def create_app(self):
+        app = webapp.create_app('test')
+        return app
+
+    def setUp(self):
+        testing.TestCase.setUp(self)
+        db.create_all()
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+
+
 class FakeWebsocket:
     "Use to create an in-memory a BridgeState."
     def __init__(self):
@@ -86,9 +107,10 @@ class FakeWebsocket:
         self.messages.append(message)
 
 
-class TestNormalFlow(unittest.TestCase):
+class TestNormalFlow(BaseTest):
     "A bunch of smoke tests that exercise the _accept_step."
     def setUp(self):
+        BaseTest.setUp(self)
         self.bridge_state = protocol_loop.BridgeState(
             FakeWebsocket(), m_power_on.bridge_address)
 
@@ -118,6 +140,13 @@ class TestNormalFlow(unittest.TestCase):
         self.assertNotIn(m_hearbeat.device_address, self.bridge_state.connected_devices)
 
     def test_encryption_key_required(self):
+        # Pretend this printer is claimed:
+        hardware.Printer.phone_home('000d6f000273ce0b')
+        p = hardware.Printer.query.first()
+        p.used_claim_code = 'n5ry-p6x6-kth7-7hc4'
+        db.session.add(p)
+        db.session.commit()
+
         protocol_loop.bridge_by_address = {
             self.bridge_state.address: self.bridge_state
         }
@@ -126,9 +155,10 @@ class TestNormalFlow(unittest.TestCase):
         self.assertEquals(len(self.bridge_state.websocket.messages), 1)
 
 
-class TestBrokenFlow(unittest.TestCase):
+class TestBrokenFlow(BaseTest):
     "Check unexpected interactions."
     def setUp(self):
+        BaseTest.setUp(self)
         self.bridge_state = protocol_loop.BridgeState(
             None, m_power_on.bridge_address)
 
@@ -149,9 +179,10 @@ class TestBrokenFlow(unittest.TestCase):
         protocol_loop._accept_step(m_command_response, self.bridge_state)
 
 
-class TestMultiDevice(unittest.TestCase):
+class TestMultiDevice(BaseTest):
     "What happens when we have more than one device."
     def setUp(self):
+        BaseTest.setUp(self)
         self.bridge_state = protocol_loop.BridgeState(
             FakeWebsocket(), m_power_on.bridge_address)
 
