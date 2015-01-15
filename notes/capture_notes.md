@@ -110,8 +110,50 @@ itself is online.
 - users
 
 
-# What happens when we send down an illegal print command:
+# What is this?
 
-DEBUG:sirius.protocol.protocol_loop:Received UnknownEvent(raw_dict={u'device_address': u'000d6f000273ce0b', u'timestamp': 1421336620.588616, u'transfer_time': 3.43, u'bridge_address': u'000d6f0001b3719d', u'return_code': 144, u'rssi_stats': [-19, -19, -19], u'type': u'DeviceCommandResponse', u'command_id': 0}).
+{u'device_address': u'000d6f000273ce0b',
+u'timestamp': 1421336620.588616,
+u'transfer_time': 3.43,
+u'bridge_address': u'000d6f0001b3719d',
+u'return_code': 144,
+u'rssi_stats': [-19,-19,-19],
+u'type': u'DeviceCommandResponse',
+u'command_id': 0}
 
-Note the `return_code`.
+Note the `return_code` of 144 (0x90). Looks like it is this:
+
+    COMMAND_NAME_ID_MAP = { :set_delivery_and_print => 0x0001,
+                            :set_delivery => 0x0002,
+                            :set_delivery_and_print_no_face => 0x0011,
+                            :set_delivery_no_face => 0x0012,
+                            :set_personality => 0x0102,
+                            :set_personality_with_message => 0x0101,
+                            :set_quip => 0x0202,
+                            :firmware_update => 0xf000 }
+
+    RESPONSE_CODE_MAP = { :success => 0,
+                          :eui64_not_found => 0x01,
+                          :failed_network => 0x02,
+                          :invalid_sequence => 0x20,
+                          :busy => 0x30,
+                          :invalid_size => 0x80,
+                          :invalid_devicetype => 0x81,
+                          :filesystem_error => 0x82,
+                          :filesystem_invalid_id => 0x90,
+                          :filesystem_no_free_filehandles => 0x91,
+                          :filesystem_write_error => 0x92,
+                          :bridge_error => 0xff }
+
+
+# What happens when the binary payload has an extra 'x' at the end
+  before encoding:
+
+{u'device_address': u'000d6f000273ce0b',
+u'timestamp': 1421339025.755868,
+u'transfer_time': 3.44,
+u'bridge_address': u'000d6f0001b3719d',
+u'return_code': 128,
+u'rssi_stats': [-19,-19,-19],
+u'type': u'DeviceCommandResponse',
+u'command_id': 0}

@@ -34,7 +34,9 @@ class BridgeState(object):
         self.websocket = websocket
         self.pending_commands = dict()
         self.connected_devices = set()
-        self.next_command_id = 0
+        # NB 0 is an invalid command id (AKA file-id) so we start at
+        # 10. This took me an hour to debug, do not change!
+        self.next_command_id = 10
 
 
 def send_message(device_address, message):
