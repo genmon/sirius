@@ -66,11 +66,7 @@ class TwitterOAuth(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    user = db.relationship(
+        User, backref=db.backref('twitteroauth', lazy='dynamic'))
     screen_name = db.Column(db.String, unique=True)
     token = db.Column(db.String, unique=True)
-
-TwitterOAuth.user = db.relationship(
-    User,
-    primaryjoin=TwitterOAuth.user_id == User.id,
-    backref=db.backref('twitteroauth', lazy='dynamic'),
-)
