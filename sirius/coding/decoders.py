@@ -42,18 +42,19 @@ class DeviceEventConst(object):
     EVENT_DID_POWER_ON_SIZE_SHORT = 58 # No fragmentation
 
     RESET_DICT = {
-        0x0000 : "Undeterminable cause",
-        0x0100 : "FIB bootloader",
-        0x0200 : "Ember bootloader",
-        0x0300 : "External reset",
-        0x0400 : "Power on",
-        0x0500 : "Watchdog",
-        0x0600 : "Software triggered",
-        0x0700 : "Software crash",
-        0x0800 : "Flash failure",
-        0x0900 : "Fatal error",
-        0x0a00 : "Access fault",
+        0x0000: "Undeterminable cause",
+        0x0100: "FIB bootloader",
+        0x0200: "Ember bootloader",
+        0x0300: "External reset",
+        0x0400: "Power on",
+        0x0500: "Watchdog",
+        0x0600: "Software triggered",
+        0x0700: "Software crash",
+        0x0800: "Flash failure",
+        0x0900: "Fatal error",
+        0x0a00: "Access fault",
     }
+
 
 def decode_message(data):
     """Decodes a single incoming message from data.
@@ -185,7 +186,7 @@ def _decode_device_event(data):
         else:
             return messages.MalformedEvent(
                 data, 'power_on payload wrong size. Is {}. Expected: {}'.format(
-                len(payload_length),
+                    len(payload_length),
             ))
 
         deviceType, firmwareBuildVersion, loaderBuildVersion, protocolVersion, resetDescription = power_on_fields

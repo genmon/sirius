@@ -7,7 +7,8 @@ import tempfile
 WHITE = 0
 BLACK = 1
 THRESHOLD = 127
-TRANSLATE = [ (1536, 255), (1152, 254), (768, 253), (384, 252), (251, 251) ]
+TRANSLATE = [(1536, 255), (1152, 254), (768, 253), (384, 252), (251, 251)]
+
 
 def pixel_to_bw(p):
     if p == (0, 0, 0, 0):
@@ -17,7 +18,11 @@ def pixel_to_bw(p):
     else:
         return BLACK
 
-def ilen(i): return sum(1 for _ in i)
+
+def ilen(i):
+    "Returns length of an iterator in constant space."
+    return sum(1 for _ in i)
+
 
 # so what we have is a list of runs, alternating white and black,
 # starting with white.
@@ -66,7 +71,7 @@ def rle_image(im):
     # create list of tuples (WHITE|BLACK, run_length)
     groups = []
     for k, g in grouped:
-        groups.append( (k, ilen(g)) )
+        groups.append((k, ilen(g)))
 
     # the decoder assumes that the first run is white, so if the
     # first pixel is black, add a zero run of white
@@ -87,24 +92,24 @@ def rle_image(im):
 
 
 def html_to_png(html):
-	""" This works:
-	<html><body style="width: 384px; margin: 0;">
-	<img src="https://dl.dropboxusercontent.com/u/165957/Escher.gif">
-	</body></html>
-	"""
-	from selenium import webdriver
-        try:
-            driver = webdriver.PhantomJS('phantomjs')
-            driver.set_window_size(384, 5)
+    """ This works:
+    <html><body style="width: 384px; margin: 0;">
+    <img src="https://dl.dropboxusercontent.com/u/165957/Escher.gif">
+    </body></html>
+    """
+    from selenium import webdriver
+    try:
+        driver = webdriver.PhantomJS('phantomjs')
+        driver.set_window_size(384, 5)
 
-            # note that the .html suffix is required to make phantomjs
-            # pick up the mime-type and render correctly.
-            with tempfile.NamedTemporaryFile(suffix='.html') as f:
-                f.write(html)
-                f.flush()
-                driver.get('file://' + f.name)
-                p = driver.get_screenshot_as_png()
+        # note that the .html suffix is required to make phantomjs
+        # pick up the mime-type and render correctly.
+        with tempfile.NamedTemporaryFile(suffix='.html') as f:
+            f.write(html)
+            f.flush()
+            driver.get('file://' + f.name)
+            p = driver.get_screenshot_as_png()
 
-            return Image.open(io.BytesIO(p))
-        finally:
-            driver.quit()
+        return Image.open(io.BytesIO(p))
+    finally:
+        driver.quit()

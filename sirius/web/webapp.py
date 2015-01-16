@@ -15,7 +15,7 @@ from sirius.protocol import protocol_loop
 from sirius import stats
 from sirius import config
 
- # Import models so they get picked up for migrations.
+# Import models so they get picked up for migrations.
 from sirius.models import db
 from sirius.models import hardware
 from sirius.models import user

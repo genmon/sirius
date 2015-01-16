@@ -7,6 +7,7 @@ from sirius.models import hardware
 from sirius.models.db import db
 from sirius.web import webapp
 
+
 class Base(testing.TestCase):
 
     def create_app(self):

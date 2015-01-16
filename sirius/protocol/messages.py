@@ -64,7 +64,7 @@ DeviceCommandResponse = namedtuple('DeviceCommandResponse', [
 
 SetDeliveryAndPrint = namedtuple('SetDeliveryAndPrint', [
     'device_address',
-    'pixels', # 384 pixels wide
+    'pixels',  # 384 pixels wide
 ])
 
 SetDelivery = namedtuple('SetDelivery', [
@@ -73,7 +73,7 @@ SetDelivery = namedtuple('SetDelivery', [
 ])
 
 SetLogLevel = namedtuple('SetLogLevel', [
-    'level', # lower-case string, e.g. 'critical'
+    'level',  # lower-case string, e.g. 'critical'
 ])
 
 EnableCloudLogging = namedtuple('EnableCloudLogging', [])
@@ -83,11 +83,11 @@ DisableCloudLogging = namedtuple('DisableCloudLogging', [])
 Leave = namedtuple('Leave', [])
 
 Form = namedtuple('Form', [
-    'channels', # list of numbers
+    'channels',  # list of numbers
 ])
 
 Pjoin = namedtuple('Pjoin', [
-    'duration', # int
+    'duration',  # int
 ])
 
 Restart = namedtuple('Restart', [])
@@ -95,11 +95,11 @@ Restart = namedtuple('Restart', [])
 Reboot = namedtuple('Reboot', [])
 
 SetCommandPollFrequency = namedtuple('SetCommandPollFrequency', [
-    'frequency', # int in seconds, clamped to [10, 30]
+    'frequency',  # int in seconds, clamped to [10, 30]
 ])
 
 SetBridgeLogFrequency = namedtuple('SetBridgeLogFrequency', [
-    'frequency', # int in seconds, clamped to [10, 30]
+    'frequency',  # int in seconds, clamped to [10, 30]
 ])
 
 EnableSlowEvents = namedtuple('EnableSlowEvents', [])

@@ -2,6 +2,7 @@ import unittest
 
 from sirius.coding import image_encoding
 
+
 class ImageCase(unittest.TestCase):
 
     def test_normal_text(self):

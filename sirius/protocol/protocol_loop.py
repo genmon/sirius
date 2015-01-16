@@ -124,7 +124,7 @@ def _decoder_loop(ws):
     while True:
         raw_data = ws.receive()
         if raw_data == '':
-            break # websocket closed by client
+            break  # websocket closed by client
 
         try:
             data = json.loads(raw_data)
@@ -150,7 +150,7 @@ def _accept_step(x, bridge_state):
         bridge_state.connected_devices.discard(x.device_address)
 
     elif type(x) == messages.BridgeLog:
-        pass # TODO - write log to a place
+        pass  # TODO - write log to a place
 
     elif type(x) == messages.EncryptionKeyRequired:
         hardware.Printer.phone_home(x.device_address)

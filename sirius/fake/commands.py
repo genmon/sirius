@@ -10,10 +10,13 @@ from sirius.models.db import db
 from sirius.coding import bitshuffle
 from sirius.coding import claiming
 
+
 def sub_opts(app, **kwargs):
     pass
 
+
 fake_manager = script.Manager(sub_opts, usage="Fake printer interactions.")
+
 
 @fake_manager.command
 def printer():

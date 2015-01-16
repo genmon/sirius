@@ -1,7 +1,6 @@
 import unittest
 
 from sirius.coding import claiming
-from sirius.coding import bitshuffle
 
 
 CC_TEST_VECTORS = [

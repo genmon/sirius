@@ -8,6 +8,7 @@ from sirius.coding import claiming
 from sirius.models.db import db
 from sirius.models import hardware
 
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
@@ -70,6 +71,6 @@ class TwitterOAuth(db.Model):
 
 TwitterOAuth.user = db.relationship(
     User,
-    primaryjoin=TwitterOAuth.user_id==User.id,
+    primaryjoin=TwitterOAuth.user_id == User.id,
     backref=db.backref('twitteroauth', lazy='dynamic'),
 )
