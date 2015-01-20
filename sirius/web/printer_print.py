@@ -3,10 +3,13 @@ from flask.ext import login
 import flask_wtf
 import wtforms
 
+from sirius.models.db import db
 from sirius.models import hardware
+from sirius.models import messages as model_messages
 from sirius.protocol import protocol_loop
 from sirius.protocol import messages
 from sirius.coding import image_encoding
+
 
 blueprint = flask.Blueprint('printer_print', __name__)
 
@@ -50,6 +53,18 @@ def printer_print(user_id, username, printer_id):
             device_address=printer.device_address,
             pixels=pixels,
         )
+
+        # Store the same message in the model.
+        model_message = model_messages.Message(
+            pixels=bytearray(pixels),
+            sender_id=login.current_user.id,
+            target_printer=printer,
+        )
+        db.session.add(model_message)
+
+        # Note that we don't really handle the case of a disconnected
+        # printer yet. It f the printer isn't connected we'll silently
+        # swallow the message.
         protocol_loop.send_message(printer.device_address, hardware_message)
 
         return flask.redirect(flask.url_for(

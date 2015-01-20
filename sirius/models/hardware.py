@@ -11,7 +11,7 @@ class Bridge(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    bridge_address = db.Column(db.String, primary_key=True)
+    bridge_address = db.Column(db.String)
 
 
 class Printer(db.Model):

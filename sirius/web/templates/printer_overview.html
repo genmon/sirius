@@ -12,4 +12,21 @@
 	Print a thing
 </a>
 <h2>Messages</h2>
+{% for m in messages %}
+<div>
+	<b>From:</b> {{ m.sender.username }}. <b>Printer:</b> {{ m.target_printer.name }}.<br>
+	<b>Sent:</b>
+	{% if m.response_timestamp == None %}
+	.. still sending ..
+	{% elif m.failure_message == None %}
+	{{ m.response_timestamp.strftime('%d/%m/%Y %H:%M') }}
+	{% else %}
+	<b style="color: red;">{{ m.failure_message }}</b> at {{ m.response_timestamp.strftime('%d/%m/%Y %H:%M') }}
+	{% endif %}
+</div>
+<div style="margin-bottom: 30px;">
+	<img src="data:image/png;base64,{{ m.base64_pixels() }}" style="border: 1px solid black;width: 6cm;"><br>
+</div>
+
+{% endfor %}
 {% endblock %}
