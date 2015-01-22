@@ -19,7 +19,7 @@ def printer_overview(user_id, username, printer_id):
         flask.abort(404)
 
     messages.Message.timeout_updates()
-    message_list = login.current_user.messages.order_by(desc('created'))
+    message_list = printer.messages.order_by(desc('created'))
 
     # TODO - pagination?
     return flask.render_template(

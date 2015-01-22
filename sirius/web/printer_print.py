@@ -41,6 +41,7 @@ def printer_print(user_id, username, printer_id):
     # submit a valid printer-id that's not owned by the user:
     form.target_printer.choices = [
         (x.id, x.name) for x in login.current_user.printers.all()]
+    form.target_printer.data = printer.id
 
     if form.validate_on_submit():
         flask.flash('Sent your message to the printer!')
