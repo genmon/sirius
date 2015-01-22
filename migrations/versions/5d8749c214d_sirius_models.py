@@ -1,13 +1,13 @@
 """Sirius models.
 
-Revision ID: d62b07987a2
+Revision ID: 5d8749c214d
 Revises: None
-Create Date: 2015-01-20 14:24:56.114106
+Create Date: 2015-01-21 12:06:37.092841
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'd62b07987a2'
+revision = '5d8749c214d'
 down_revision = None
 
 from alembic import op
@@ -22,17 +22,17 @@ def upgrade():
     sa.Column('bridge_address', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('user',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('created', sa.DateTime(), nullable=True),
+    sa.Column('username', sa.String(), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('device_log',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created', sa.DateTime(), nullable=True),
     sa.Column('device_address', sa.String(), nullable=True),
     sa.Column('entry', sa.String(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('user',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('created', sa.DateTime(), nullable=True),
-    sa.Column('username', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('twitter_o_auth',
@@ -41,10 +41,10 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('screen_name', sa.String(), nullable=True),
     sa.Column('token', sa.String(), nullable=True),
+    sa.Column('token_secret', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], [u'user.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('screen_name'),
-    sa.UniqueConstraint('token')
+    sa.UniqueConstraint('screen_name')
     )
     op.create_table('printer',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -90,7 +90,7 @@ def downgrade():
     op.drop_table('claim_code')
     op.drop_table('printer')
     op.drop_table('twitter_o_auth')
-    op.drop_table('user')
     op.drop_table('device_log')
+    op.drop_table('user')
     op.drop_table('bridge')
     ### end Alembic commands ###
