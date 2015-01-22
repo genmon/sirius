@@ -100,7 +100,10 @@ def html_to_png(html):
     """
     from selenium import webdriver
     try:
-        driver = webdriver.PhantomJS('phantomjs')
+        caps = {'acceptSslCerts': True}
+        driver = webdriver.PhantomJS(
+            'phantomjs', desired_capabilities=caps,
+            service_args=['--ignore-ssl-errors=true', '--ssl-protocol=any'])
         driver.set_window_size(384, 5)
 
         # note that the .html suffix is required to make phantomjs
