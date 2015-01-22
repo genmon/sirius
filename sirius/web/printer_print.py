@@ -16,12 +16,12 @@ blueprint = flask.Blueprint('printer_print', __name__)
 
 class PrintForm(flask_wtf.Form):
     target_printer = wtforms.SelectField(
-        'target_printer',
+        'Printer',
         coerce=int,
         validators=[wtforms.validators.DataRequired()],
     )
-    message = wtforms.StringField(
-        'message',
+    message = wtforms.TextAreaField(
+        'Message',
         validators=[wtforms.validators.DataRequired()],
     )
 
