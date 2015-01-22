@@ -4,14 +4,32 @@
 
 {% block page_content %}
 <h1>Claim a printer</h1>
-<div>
-	<form method="POST">
-		{{ form.csrf_token }}
-		{{ form.claim_code.label }}
-		{{ form.claim_code(size=24) }}
-		{{ form.printer_name.label }}
-		{{ form.printer_name(size=24) }}
-		<input type="submit" value="Claim printer">
-	</form>
-</div>
+<form method="POST">
+	{{ form.csrf_token }}
+
+	<div class="form-group {% if form.claim_code.errors %}has-error{% endif%}">
+		<label>{{ form.claim_code.label }}</label>
+		{% if form.claim_code.errors %}
+		<ul>
+			{% for error in form.claim_code.errors %}
+			<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+		{% endif %}
+		{{ form.claim_code(class="form-control") }}
+	</div>
+
+	<div class="form-group {% if form.printer_name.errors %}has-error{% endif%}">
+		<label>{{ form.printer_name.label }}</label>
+		{% if form.printer_name.errors %}
+		<ul>
+			{% for error in form.printer_name.errors %}
+			<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+		{% endif %}
+		{{ form.printer_name(class="form-control") }}
+	</div>
+	<input type="submit" value="Claim printer">
+</form>
 {% endblock %}

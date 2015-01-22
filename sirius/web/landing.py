@@ -10,11 +10,11 @@ blueprint = flask.Blueprint('landing', __name__)
 
 class ClaimForm(flask_wtf.Form):
     claim_code = wtforms.StringField(
-        'claim_code',
+        'Claim code',
         validators=[wtforms.validators.DataRequired()],
     )
     printer_name = wtforms.StringField(
-        'printer_name',
+        'Name your printer',
         validators=[wtforms.validators.DataRequired()],
     )
 
