@@ -23,7 +23,7 @@ class ClaimForm(flask_wtf.Form):
             claiming.unpack_claim_code(field.data)
         except claiming.InvalidClaimCode:
             raise wtforms.validators.ValidationError(
-                "{} doesn't look like a valid claim code :("
+                "`{}` doesn't look like a valid claim code :(".format(field.data)
             )
 
 
