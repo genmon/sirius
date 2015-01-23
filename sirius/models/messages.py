@@ -1,6 +1,7 @@
 import base64
 import datetime
 import logging
+from sqlalchemy import desc
 
 from sirius.models.db import db
 from sirius.models import hardware
@@ -83,3 +84,19 @@ class Message(db.Model):
 
         db.session.add(message)
         db.session.commit()
+
+    @classmethod
+    def get_next_command_id(cls):
+        """Return the next command id to be used by the bridge. Command ids
+        are used to ack messages so we need to make sure we don't have
+        any collisions. The best way to do so is to pick the
+        next-highest number after the ones we already used up.
+        """
+        last = cls.query.order_by(desc('print_id')).first()
+        if last is None:
+            next_print_id = 1
+        else:
+            next_print_id = last.print_id + 1
+
+        db.session.commit()
+        return next_print_id

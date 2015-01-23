@@ -9,7 +9,6 @@ send_message(device_address, message)
 import messages
 import json
 import logging
-from sqlalchemy import desc
 
 from sirius.coding import encoders
 from sirius.coding import decoders
@@ -37,19 +36,10 @@ class BridgeState(object):
         self.websocket = websocket
         self.pending_commands = dict()
         self.connected_devices = set()
+
         # NB 0 is an invalid command id (AKA file-id) so we start at
-        # 10. This took me an hour to debug, do not change!
-
-        last = model_messages.Message.query.order_by(desc('id')).first()
-        if last is None:
-            next_print_id = 0
-        else:
-            next_print_id = last.id + 1
-        db.session.commit()
-
-        print next_print_id
-
-        self.next_command_id = next_print_id
+        # whatever the latest message id is to avoid collisions.
+        self.next_command_id = model_messages.Message.get_next_command_id()
 
 
 def send_message(device_address, message):
