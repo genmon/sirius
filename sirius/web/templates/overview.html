@@ -35,5 +35,10 @@
 </div>
 
 {% endif %}
-<h1>Printers of friends</h1>
+<h1>Friends who can print on my printers</h1>
+<ul>
+{% for x in signed_up_friends %}
+<li>{{ x.username }}</li>
+{% endfor %}
+</ul>
 {% endblock %}

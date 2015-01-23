@@ -4,6 +4,8 @@ import wtforms
 from flask.ext import login
 
 from sirius.coding import claiming
+from sirius.web import twitter
+from sirius.models import user
 
 blueprint = flask.Blueprint('landing', __name__)
 
@@ -39,9 +41,18 @@ def landing():
 def overview():
     my_printers = login.current_user.printers.all()
 
+    try:
+        friends = twitter.get_friends(login.current_user)
+        signed_up_friends = user.User.query.filter(user.User.username.in_(x.screen_name for x in friends))
+    except Exception:
+        # twitter rate limit
+        signed_up_friends = []
+
+
     return flask.render_template(
         'overview.html',
         my_printers=my_printers,
+        signed_up_friends=signed_up_friends,
     )
 
 

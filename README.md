@@ -88,3 +88,5 @@ encryption key.
 * Can't read images from the net because we're rendering a local file
   with phantomjs. The way to fix is probably to run an in-process
   web-server for the duration of rendering (urg).
+* What to do with twitter users that have > 5000 followers? More
+  generally the UI becomes unusable.
