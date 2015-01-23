@@ -29,7 +29,35 @@
 		{% endif %}
 		{{ form.message(class="form-control") }}
 	</div>
-	<input type="submit" value="Print now">
-</form>
+	<input type="submit" class="btn" value="Print now">
 
+	<input class="btn"  id="preview" value="Preview">
+</form>
+<br>
+
+Preview:
+<div id="preview_pane" style="width: 6cm;border: 1px solid black;">
+</div>
 {% endblock %}
+
+{% block scripts %}
+{{ super() }}
+
+<script>
+        $("#preview").on('click', function() {
+        $.ajax({
+          url: "{{ url_for('printer_print.preview',
+                          user_id=current_user.id,
+                          username=current_user.username,
+                          printer_id=printer.id) }}",
+          data: $("#message").val(),
+	  method: "POST",
+	  contentType: "text/plain",
+          success: function(response) {
+          $("#preview_pane").html(response);
+            console.log(response);
+          }
+	})
+	})
+</script>
+{% endblock scripts%}

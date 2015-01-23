@@ -2,6 +2,7 @@ import flask
 from flask.ext import login
 import flask_wtf
 import wtforms
+import base64
 
 from sirius.models.db import db
 from sirius.models import hardware
@@ -79,3 +80,19 @@ def printer_print(user_id, username, printer_id):
         printer=printer,
         form=form,
     )
+
+
+@blueprint.route('/<int:user_id>/<username>/printer/<int:printer_id>/preview', methods=['POST'])
+@login.login_required
+def preview(user_id, username, printer_id):
+    assert user_id == login.current_user.id
+    assert username == login.current_user.username
+
+    message = flask.request.data
+
+    print "M", message
+
+    pixels = image_encoding.html_to_png(
+        '<html><body>{}</body></html>'.format(message))
+
+    return '<img style="width: 6cm;" src="data:image/png;base64,{}">'.format(base64.b64encode(pixels))
