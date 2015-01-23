@@ -1,9 +1,13 @@
 import base64
 import datetime
+import logging
 
 from sirius.models.db import db
 from sirius.models import hardware
 from sirius.models import user
+
+
+logger = logging.getLogger(__name__)
 
 
 TIMEOUT_SECONDS = 60
@@ -15,6 +19,8 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow, index=True)
     pixels = db.Column(db.LargeBinary)
+
+    print_id = db.Column(db.Integer, unique=True)
 
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     sender = db.relationship('User', backref=db.backref('messages', lazy='dynamic'))
@@ -48,7 +54,32 @@ class Message(db.Model):
             response_timestamp=utcnow,
             failure_message="Timed out",
         ))
+        db.session.commit()
 
 
     def base64_pixels(self):
         return base64.b64encode(self.pixels)
+
+
+    @classmethod
+    def ack(cls, return_code, command_id, utcnow=None):
+        if return_code != 0:
+            # TODO map codes to error messages
+            failure_message = 'Problem printing: {}'.format(return_code)
+        else:
+            failure_message = None
+
+        if utcnow is None:
+            utcnow = datetime.datetime.utcnow()
+
+        message = cls.query.filter_by(print_id=command_id).first()
+
+        if message is None:
+            logger.error("Ack'ed unknown message %s.", command_id)
+            return
+
+        message.response_timestamp = utcnow
+        message.failure_message = failure_message
+
+        db.session.add(message)
+        db.session.commit()

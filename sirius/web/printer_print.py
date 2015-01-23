@@ -56,18 +56,23 @@ def printer_print(user_id, username, printer_id):
             pixels=pixels,
         )
 
+        # Note that we don't really handle the case of a disconnected
+        # printer yet. It f the printer isn't connected we'll silently
+        # swallow the message.
+        next_print_id = protocol_loop.send_message(printer.device_address, hardware_message)
+
+        if next_print_id is False:
+            pass # TODO - note immediately that we could not print in
+                 # failure_message.
+
         # Store the same message in the model.
         model_message = model_messages.Message(
+            print_id=next_print_id,
             pixels=bytearray(pixels),
             sender_id=login.current_user.id,
             target_printer=printer,
         )
         db.session.add(model_message)
-
-        # Note that we don't really handle the case of a disconnected
-        # printer yet. It f the printer isn't connected we'll silently
-        # swallow the message.
-        protocol_loop.send_message(printer.device_address, hardware_message)
 
         return flask.redirect(flask.url_for(
             'printer_overview.printer_overview',

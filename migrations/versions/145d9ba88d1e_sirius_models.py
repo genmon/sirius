@@ -1,13 +1,13 @@
 """Sirius models.
 
-Revision ID: 5d8749c214d
+Revision ID: 145d9ba88d1e
 Revises: None
-Create Date: 2015-01-21 12:06:37.092841
+Create Date: 2015-01-23 12:08:26.850006
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '5d8749c214d'
+revision = '145d9ba88d1e'
 down_revision = None
 
 from alembic import op
@@ -35,17 +35,6 @@ def upgrade():
     sa.Column('entry', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('twitter_o_auth',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('created', sa.DateTime(), nullable=True),
-    sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('screen_name', sa.String(), nullable=True),
-    sa.Column('token', sa.String(), nullable=True),
-    sa.Column('token_secret', sa.String(), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], [u'user.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('screen_name')
-    )
     op.create_table('printer',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created', sa.DateTime(), nullable=True),
@@ -56,6 +45,17 @@ def upgrade():
     sa.Column('used_claim_code', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['owner_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('twitter_o_auth',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('created', sa.DateTime(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('screen_name', sa.String(), nullable=True),
+    sa.Column('token', sa.String(), nullable=True),
+    sa.Column('token_secret', sa.String(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], [u'user.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('screen_name')
     )
     op.create_table('claim_code',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -71,13 +71,15 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created', sa.DateTime(), nullable=True),
     sa.Column('pixels', sa.LargeBinary(), nullable=True),
+    sa.Column('print_id', sa.Integer(), nullable=True),
     sa.Column('sender_id', sa.Integer(), nullable=True),
     sa.Column('target_printer_id', sa.Integer(), nullable=True),
     sa.Column('response_timestamp', sa.DateTime(), nullable=True),
     sa.Column('failure_message', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['sender_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['target_printer_id'], ['printer.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('print_id')
     )
     op.create_index(op.f('ix_message_created'), 'message', ['created'], unique=False)
     ### end Alembic commands ###
@@ -88,8 +90,8 @@ def downgrade():
     op.drop_index(op.f('ix_message_created'), table_name='message')
     op.drop_table('message')
     op.drop_table('claim_code')
-    op.drop_table('printer')
     op.drop_table('twitter_o_auth')
+    op.drop_table('printer')
     op.drop_table('device_log')
     op.drop_table('user')
     op.drop_table('bridge')
