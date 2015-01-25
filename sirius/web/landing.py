@@ -4,17 +4,19 @@ import wtforms
 from flask.ext import login
 
 from sirius.coding import claiming
+from sirius.web import twitter
+from sirius.models import user
 
 blueprint = flask.Blueprint('landing', __name__)
 
 
 class ClaimForm(flask_wtf.Form):
     claim_code = wtforms.StringField(
-        'claim_code',
+        'Claim code',
         validators=[wtforms.validators.DataRequired()],
     )
     printer_name = wtforms.StringField(
-        'printer_name',
+        'Name your printer',
         validators=[wtforms.validators.DataRequired()],
     )
 
@@ -23,7 +25,7 @@ class ClaimForm(flask_wtf.Form):
             claiming.unpack_claim_code(field.data)
         except claiming.InvalidClaimCode:
             raise wtforms.validators.ValidationError(
-                "{} doesn't look like a valid claim code :("
+                "`{}` doesn't look like a valid claim code :(".format(field.data)
             )
 
 
@@ -39,9 +41,18 @@ def landing():
 def overview():
     my_printers = login.current_user.printers.all()
 
+    try:
+        friends = twitter.get_friends(login.current_user)
+        signed_up_friends = user.User.query.filter(user.User.username.in_(x.screen_name for x in friends))
+    except Exception:
+        # twitter rate limit
+        signed_up_friends = []
+
+
     return flask.render_template(
         'overview.html',
         my_printers=my_printers,
+        signed_up_friends=signed_up_friends,
     )
 
 

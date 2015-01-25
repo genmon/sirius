@@ -81,3 +81,12 @@ We are also deriving this hardware xor when a device calls home with
 an "encryption_key_required". In that case we connect the device to
 the claim code via the hardware-xor and send back the correct
 encryption key.
+
+
+## TODO
+
+* Can't read images from the net because we're rendering a local file
+  with phantomjs. The way to fix is probably to run an in-process
+  web-server for the duration of rendering (urg).
+* What to do with twitter users that have > 5000 followers? More
+  generally the UI becomes unusable.

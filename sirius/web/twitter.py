@@ -1,10 +1,18 @@
+from __future__ import absolute_import
+
+import collections
 import flask
+from gevent import pool
 from flask.ext import oauth
 from flask.ext import login
+
+import twitter as twitter_api
 
 from sirius.models import user
 from sirius.models.db import db
 
+
+Friend = collections.namedtuple('Friend', 'screen_name name profile_image_url')
 
 blueprint = flask.Blueprint('twitter_oauth', __name__)
 oauth_app = oauth.OAuth()
@@ -75,6 +83,7 @@ def process_authorization(token, token_secret, screen_name, next_url):
             user=new_user,
             screen_name=screen_name,
             token=token,
+            token_secret=token_secret,
         )
 
         db.session.add(new_user)
@@ -84,3 +93,33 @@ def process_authorization(token, token_secret, screen_name, next_url):
     login.login_user(oauth.user)
 
     return flask.redirect(next_url)
+
+
+def get_friends(user):
+    api = twitter_api.Twitter(auth=twitter_api.OAuth(
+        user.twitter_oauth.token,
+        user.twitter_oauth.token_secret,
+        twitter.consumer_key,
+        twitter.consumer_secret,
+    ))
+    # Twitter allows lookup of 100 users at a time so we need to
+    # chunk:
+    chunk = lambda l, n: [l[x:x+n] for x in xrange(0, len(l), n)]
+    friend_ids = list(api.friends.ids()['ids'])
+
+    greenpool = pool.Pool(4)
+
+    # Look up in parallel. Note that twitter has pretty strict 15
+    # requests/second rate limiting.
+    friends = []
+    for result in greenpool.imap(
+            lambda ids: api.users.lookup(user_id=','.join(str(id) for id in ids)),
+            chunk(friend_ids, 100)):
+        for r in result:
+            friends.append(Friend(
+                screen_name=r['screen_name'],
+                name=r['name'],
+                profile_image_url=r['profile_image_url'],
+            ))
+
+    return friends

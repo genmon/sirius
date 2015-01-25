@@ -16,6 +16,8 @@ class User(db.Model):
     # username can't be unique because we may have multiple identity
     # providers. For now we just copy the  twitter handle.
     username = db.Column(db.String)
+    twitter_oauth = db.relationship(
+        'TwitterOAuth', uselist=False, backref=db.backref('user'))
 
     def __repr__(self):
         return 'User {}'.format(self.username)
@@ -66,7 +68,7 @@ class TwitterOAuth(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
-    user = db.relationship(
-        User, backref=db.backref('twitteroauth', lazy='dynamic'))
     screen_name = db.Column(db.String, unique=True)
-    token = db.Column(db.String, unique=True)
+
+    token = db.Column(db.String)
+    token_secret = db.Column(db.String)
