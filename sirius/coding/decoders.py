@@ -239,6 +239,11 @@ def _decode_device_event(data):
                     payload_length, DeviceEventConst.EVENT_DID_PRINT_SIZE))
 
         print_type, print_id = struct.unpack_from("<BI", binary, offset)
+
+        # 0x01 => :delivery,
+        # 0x10 => :nothing_to_print,
+        # 0x11 => :quip,
+
         return messages.DeviceDidPrint(
             device_address=device_address,
             type=print_type,

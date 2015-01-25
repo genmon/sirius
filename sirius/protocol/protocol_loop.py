@@ -14,7 +14,9 @@ from sirius.coding import encoders
 from sirius.coding import decoders
 from sirius import stats
 
+from sirius.models.db import db
 from sirius.models import hardware
+from sirius.models import messages as model_messages
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +36,10 @@ class BridgeState(object):
         self.websocket = websocket
         self.pending_commands = dict()
         self.connected_devices = set()
+
         # NB 0 is an invalid command id (AKA file-id) so we start at
-        # 10. This took me an hour to debug, do not change!
-        self.next_command_id = 10
+        # whatever the latest message id is to avoid collisions.
+        self.next_command_id = model_messages.Message.get_next_command_id()
 
 
 def send_message(device_address, message):
@@ -67,7 +70,7 @@ def send_message(device_address, message):
     bridge_state.pending_commands[bridge_state.next_command_id] = message
     bridge_by_address[bridge_state.address].next_command_id += 1
 
-    return True
+    return bridge_state.next_command_id - 1
 
 
 def accept(ws):
@@ -201,6 +204,8 @@ def _accept_step(x, bridge_state):
         if x.command_id not in bridge_state.pending_commands:
             logger.error('Unexpected response (command_id not known) %r', x)
             return
+
+        model_messages.Message.ack(x.return_code, x.command_id)
 
         # TODO: some commands need special handling. E.g. what happens
         # on invalid claim codes? How do we communicate send-errors or

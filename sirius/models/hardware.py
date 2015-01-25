@@ -1,7 +1,7 @@
 import datetime
+from sqlalchemy import desc
 
 from sirius.coding import bitshuffle
-
 from sirius.models.db import db
 
 
@@ -11,7 +11,7 @@ class Bridge(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    bridge_address = db.Column(db.String, primary_key=True)
+    bridge_address = db.Column(db.String)
 
 
 class Printer(db.Model):
@@ -64,13 +64,15 @@ class Printer(db.Model):
 
         # Connect hardware xor and printer if there is a claim code
         # waiting.
-        claim_code_query = ClaimCode.query.filter_by(hardware_xor=hardware_xor)
+        #
+        # Printers always generate the same XOR. I.e. we can have more
+        # than one claim code with the same XOR. We always pick the
+        # newest claim code.
+        claim_code_query = ClaimCode.query.filter_by(
+            hardware_xor=hardware_xor).order_by(desc('created'), desc('id'))
         claim_code = claim_code_query.first()
         if claim_code is None:
             return
-
-        assert claim_code_query.count() == 1, \
-            "claim code hardware xor collision: {}".format(hardware_xor)
 
         printer.owner_id = claim_code.by_id
         printer.name = claim_code.name

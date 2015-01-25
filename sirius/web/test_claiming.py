@@ -56,6 +56,21 @@ class TestClaiming(Base):
 
         self.assertEqual(printer.owner, self.testuser)
 
+    def test_two_claims(self):
+        "We expect the newer claim to beat the older claim."
+        self.testuser2 = user.User(username="testuser 2")
+        db.session.add(self.testuser2)
+        db.session.commit()
+
+        self.testuser.claim_printer('n5ry-p6x6-kth7-7hc4', 'my test printer')
+        self.testuser2.claim_printer('n5ry-p6x6-kth7-7hc4', 'my test printer 2')
+
+        hardware.Printer.phone_home('000d6f000273ce0b')
+        db.session.commit()
+        printer = hardware.Printer.query.first()
+
+        self.assertEqual(printer.owner, self.testuser2)
+
 
 class TestClaimingWeb(Base):
 

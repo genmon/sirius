@@ -56,11 +56,12 @@ def rle(lengths):
                     yield remainder
 
 
-def rle_image(im):
+def rle_image(data):
     """
-    :param im: A python PIL image.
+    :param data: A python bytearray containing a PNG.
     :returns: A 2-tuple of (number of pixels, RLE-encoded pixel data)
     """
+    im = Image.open(io.BytesIO(data))
     im = im.convert('RGBA')
     pixels = im.getdata()
 
@@ -99,7 +100,10 @@ def html_to_png(html):
     """
     from selenium import webdriver
     try:
-        driver = webdriver.PhantomJS('phantomjs')
+        caps = {'acceptSslCerts': True}
+        driver = webdriver.PhantomJS(
+            'phantomjs', desired_capabilities=caps,
+            service_args=['--ignore-ssl-errors=true', '--ssl-protocol=any'])
         driver.set_window_size(384, 5)
 
         # note that the .html suffix is required to make phantomjs
@@ -108,8 +112,8 @@ def html_to_png(html):
             f.write(html)
             f.flush()
             driver.get('file://' + f.name)
-            p = driver.get_screenshot_as_png()
+            data = driver.get_screenshot_as_png()
 
-        return Image.open(io.BytesIO(p))
+        return data
     finally:
         driver.quit()
