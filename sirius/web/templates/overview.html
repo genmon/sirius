@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Overview{% endblock %}
+
+{% block page_content %}
+<h1>My printers</h1>
+{% if not my_printers %}
+<div>
+	No printers yet -
+	<a href="{{ url_for('landing.claim',
+                         user_id=current_user.id,
+                         username=current_user.username) }}">
+		claim one here
+	</a>.
+</div>
+{% else %}
+{% for printer in my_printers %}
+<ul>
+	<li>
+		<a href="{{ url_for('printer_overview.printer_overview',
+                               user_id=current_user.id,
+                               username=current_user.username,
+                               printer_id=printer.id) }}">
+			{{ printer.name }}</a>
+	</li>
+</ul>
+{% endfor %}
+
+<div>
+	<a href="{{ url_for('landing.claim',
+                         user_id=current_user.id,
+                         username=current_user.username) }}">
+		Claim another printer
+	</a>.
+</div>
+
+{% endif %}
+<h1>Printers of friends</h1>
+{% endblock %}

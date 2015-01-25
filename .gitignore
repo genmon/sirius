@@ -55,3 +55,6 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# local data
+sirius/data.sqlite

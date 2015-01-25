@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Print{% endblock %}
+
+{% block page_content %}
+<h1>Print a thing on {{ printer.name }}</h1>
+
+<form method="POST">
+	{{ form.csrf_token }}
+	{{ form.target_printer.errors }}
+	{{ form.target_printer }}
+	{{ form.message.errors }}
+	{{ form.message }}
+	<input type="submit" value="Print now">
+</form>
+
+{% endblock %}
