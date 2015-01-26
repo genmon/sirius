@@ -64,6 +64,24 @@ class User(db.Model):
         db.session.add(printer)
         return printer
 
+    def signed_up_friends(self):
+        """
+        :returns: 2-tuple of (all friends, list of people who can print on
+                  my own printer)
+        """
+        friends = self.twitter_oauth.friends
+        return friends, User.query.filter(
+            User.username.in_(x.screen_name for x in friends))
+
+    def friends_printers(self):
+        """
+        :returns: List of printers I can print on.
+        """
+        _, signed_up_friends = self.signed_up_friends()
+        owner_ids = [x.id for x in signed_up_friends]
+        return hardware.Printer.query.filter(
+            hardware.Printer.owner_id.in_(owner_ids))
+
 
 Friend = collections.namedtuple('Friend', 'screen_name name profile_image_url')
 

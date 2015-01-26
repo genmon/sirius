@@ -31,11 +31,27 @@
                          user_id=current_user.id,
                          username=current_user.username) }}">
 		Claim another printer
-	</a>.
+	</a>
 </div>
 
+<h2>Friends' printers</h2>
+<ul>
+{% for x in friends_printers %}
+<li>
+	{{ x.owner.username }} - {{ x.name }}
+
+	(<a href="{{ url_for('printer_print.printer_print',
+		  user_id=current_user.id,
+		  username=current_user.username,
+		  printer_id=x.id) }}">send message</a>)
+</li>
+{% else %}
+<li>No printers yet.</li>
+{% endfor %}
+</ul>
+
 {% endif %}
-<h1>People who can print on my printers</h1>
+<h2>People who can print on my printers</h2>
 <ul>
 {% for x in signed_up_friends %}
 <li>{{ x.username }}</li>

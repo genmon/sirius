@@ -1,3 +1,4 @@
+import datetime
 import flask
 from flask.ext import login
 import flask_wtf
@@ -39,14 +40,17 @@ def printer_print(user_id, username, printer_id):
 
     form = PrintForm()
     # Note that the form enforces access permissions: People can't
-    # submit a valid printer-id that's not owned by the user:
-    form.target_printer.choices = [
-        (x.id, x.name) for x in login.current_user.printers.all()]
+    # submit a valid printer-id that's not owned by the user or one of
+    # the user's friends.
+    choices = [
+        (x.id, x.name) for x in login.current_user.printers
+    ] + [
+        (x.id, x.name) for x in login.current_user.friends_printers()
+    ]
+    form.target_printer.choices = choices
     form.target_printer.data = printer.id
 
     if form.validate_on_submit():
-        flask.flash('Sent your message to the printer!')
-
         # TODO: move image encoding into a pthread.
         # TODO: use templating to avoid injection attacks
         pixels = image_encoding.html_to_png(
@@ -56,14 +60,17 @@ def printer_print(user_id, username, printer_id):
             pixels=pixels,
         )
 
-        # Note that we don't really handle the case of a disconnected
-        # printer yet. It f the printer isn't connected we'll silently
-        # swallow the message.
-        next_print_id = protocol_loop.send_message(printer.device_address, hardware_message)
+        # If a printer is "offline" then we won't find the printer
+        # connected and success will be false.
+        success, next_print_id = protocol_loop.send_message(
+            printer.device_address, hardware_message)
 
-        if next_print_id is False:
-            pass # TODO - note immediately that we could not print in
-                 # failure_message.
+        if success:
+            flask.flash('Sent your message to the printer!')
+        else:
+            flask.flash(("Could not send message because the "
+                         "printer {} is offline.").format(printer.name),
+                        'error')
 
         # Store the same message in the model.
         model_message = model_messages.Message(
@@ -72,6 +79,9 @@ def printer_print(user_id, username, printer_id):
             sender_id=login.current_user.id,
             target_printer=printer,
         )
+        if not success:
+            model_message.failure_message = 'Printer offline'
+            model_message.response_timestamp = datetime.datetime.utcnow()
         db.session.add(model_message)
 
         return flask.redirect(flask.url_for(

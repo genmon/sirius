@@ -46,11 +46,10 @@ def landing():
 def overview():
     my_printers = login.current_user.printers.all()
 
-    friends = login.current_user.twitter_oauth.friends
-    signed_up_friends = user.User.query.filter(
-        user.User.username.in_(x.screen_name for x in friends))
-
+    friends, signed_up_friends = login.current_user.signed_up_friends()
     form = TwitterRefreshFriendsForm()
+
+    friends_printers = login.current_user.friends_printers()
 
     # TODO - twitter friends refresh rate limiting.
 
@@ -61,6 +60,7 @@ def overview():
         last_friend_refresh=login.current_user.twitter_oauth.last_friend_refresh,
         signed_up_friends=signed_up_friends,
         friends=friends,
+        friends_printers=friends_printers,
     )
 
 

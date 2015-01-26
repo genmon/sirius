@@ -6,6 +6,7 @@ The official API is two functions:
 accept(websocket)
 send_message(device_address, message)
 """
+import collections
 import messages
 import json
 import logging
@@ -27,9 +28,18 @@ logger = logging.getLogger(__name__)
 # process can reply.
 bridge_by_address = dict()
 
+# Map device address to a float timestamp:
+last_seen_by_address = dict()
+
+PrinterDevice = collections.namedtuple(
+    'PrinterDevice', 'address last_heartbeat_timestamp')
+
+next_command_id = None
+
 
 class BridgeState(object):
     "Ephemeral state of a bridge. Lives as long as the websocket."
+
     def __init__(self, websocket, address):
         # key -> command_id, value -> unix timestamp sent
         self.address = address
@@ -37,9 +47,20 @@ class BridgeState(object):
         self.pending_commands = dict()
         self.connected_devices = set()
 
+
+def _get_next_command_id():
+    """
+    :returns: An int that can be used as the next command id.
+    """
+    # Lazy-initialize global next_command_id
+    global next_command_id
+    if next_command_id is None:
         # NB 0 is an invalid command id (AKA file-id) so we start at
         # whatever the latest message id is to avoid collisions.
-        self.next_command_id = model_messages.Message.get_next_command_id()
+        next_command_id = model_messages.Message.get_next_command_id()
+        logger.info("Initialized next_command_id as %s", next_command_id)
+    next_command_id += 1
+    return next_command_id
 
 
 def send_message(device_address, message):
@@ -48,29 +69,31 @@ def send_message(device_address, message):
     :param device_address: The hex-address of the device.
     :param message: A message from sirius.protocol.messages.
 
-    Return False if the device isn't connected, True otherwise.
+    :returns: 2-tuple of (success, command id used - even if the sending failed)
     """
+    command_id = _get_next_command_id()
+
+    # Search for bridge.
     for bridge_state in bridge_by_address.values():
         if device_address in bridge_state.connected_devices:
             break
     else:
-        return False
+        return (False, command_id)
 
     # Send data through the websocket.
     command = encoders.encode_bridge_command(
         bridge_state.address,
         message,
-        bridge_state.next_command_id,
+        command_id,
         '0',
     )
     bridge_state.websocket.send(json.dumps(command))
 
     # Remember the command we just sent and increment the command id.
     # TODO - implement timeout logic.
-    bridge_state.pending_commands[bridge_state.next_command_id] = message
-    bridge_by_address[bridge_state.address].next_command_id += 1
+    bridge_state.pending_commands[command_id] = message
 
-    return bridge_state.next_command_id - 1
+    return (True, command_id)
 
 
 def accept(ws):

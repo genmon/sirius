@@ -11,7 +11,7 @@ TRANSLATE = [(1536, 255), (1152, 254), (768, 253), (384, 252), (251, 251)]
 
 
 def pixel_to_bw(p):
-    if p == (0, 0, 0, 0):
+    if p == (0, 0, 0, 0): # 0 alpha means white.
         return WHITE
     elif p[0] > THRESHOLD or p[1] > THRESHOLD or p[2] > THRESHOLD:
         return WHITE
