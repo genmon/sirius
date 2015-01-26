@@ -34,8 +34,6 @@ last_seen_by_address = dict()
 PrinterDevice = collections.namedtuple(
     'PrinterDevice', 'address last_heartbeat_timestamp')
 
-next_command_id = None
-
 
 class BridgeState(object):
     "Ephemeral state of a bridge. Lives as long as the websocket."
@@ -48,19 +46,21 @@ class BridgeState(object):
         self.connected_devices = set()
 
 
-def _get_next_command_id():
-    """
+def _get_next_command_id(local_data={}):
+    """Return the next usable command id. Initialized lazily from the
+    database.
+
     :returns: An int that can be used as the next command id.
     """
     # Lazy-initialize global next_command_id
-    global next_command_id
-    if next_command_id is None:
+    if 'next_command_id' not in local_data:
         # NB 0 is an invalid command id (AKA file-id) so we start at
         # whatever the latest message id is to avoid collisions.
         next_command_id = model_messages.Message.get_next_command_id()
         logger.info("Initialized next_command_id as %s", next_command_id)
-    next_command_id += 1
-    return next_command_id
+        local_data['next_command_id'] = next_command_id
+    local_data['next_command_id'] += 1
+    return local_data['next_command_id']
 
 
 def send_message(device_address, message):

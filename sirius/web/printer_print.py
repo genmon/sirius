@@ -78,13 +78,15 @@ def printer_print(user_id, username, printer_id):
                         'error')
             stats.inc('printer.print.offline')
 
-        # Store the same message in the model.
+        # Store the same message in the database.
         model_message = model_messages.Message(
             print_id=next_print_id,
             pixels=bytearray(pixels),
             sender_id=login.current_user.id,
             target_printer=printer,
         )
+
+        # We know immediately if the printer wasn't online.
         if not success:
             model_message.failure_message = 'Printer offline'
             model_message.response_timestamp = datetime.datetime.utcnow()
