@@ -70,6 +70,8 @@ class User(db.Model):
                   my own printer)
         """
         friends = self.twitter_oauth.friends
+        if not friends:
+            return [], []
         return friends, User.query.filter(
             User.username.in_(x.screen_name for x in friends))
 
@@ -78,6 +80,8 @@ class User(db.Model):
         :returns: List of printers I can print on.
         """
         _, signed_up_friends = self.signed_up_friends()
+        if not signed_up_friends:
+            return []
         owner_ids = [x.id for x in signed_up_friends]
         return hardware.Printer.query.filter(
             hardware.Printer.owner_id.in_(owner_ids))

@@ -18,7 +18,15 @@ class Base(testing.TestCase):
     def setUp(self):
         testing.TestCase.setUp(self)
         db.create_all()
-        self.testuser = user.User(username="testuser")
+        self.testuser = user.User(
+            username="testuser",
+            twitter_oauth=user.TwitterOAuth(
+                screen_name='testuser',
+                friends=[],
+                token="token",
+                token_secret="token_secret",
+            )
+        )
         db.session.add(self.testuser)
         db.session.commit()
 

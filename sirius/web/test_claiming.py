@@ -7,6 +7,7 @@ from sirius.models.db import db
 from sirius.web import webapp
 from sirius.testing import base
 
+
 class TestClaiming(base.Base):
 
     def test_claim_first(self):

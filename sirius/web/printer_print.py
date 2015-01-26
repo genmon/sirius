@@ -48,7 +48,10 @@ def printer_print(user_id, username, printer_id):
         (x.id, x.name) for x in login.current_user.friends_printers()
     ]
     form.target_printer.choices = choices
-    form.target_printer.data = printer.id
+
+    # Set default value on get
+    if flask.request.method != 'POST':
+        form.target_printer.data = printer.id
 
     if form.validate_on_submit():
         # TODO: move image encoding into a pthread.
