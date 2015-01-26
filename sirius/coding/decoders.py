@@ -198,7 +198,7 @@ def _decode_device_event(data):
             return messages.MalformedEvent(
                 data, 'Invalid reset description. {}'.foemat(resetDescription))
 
-        return messages.DevicePowerOn(
+        return messages.DeviceDidPowerOn(
             device_address=device_address,
             device_type=deviceType,
             firmware_build_version=firmwareBuildVersion,

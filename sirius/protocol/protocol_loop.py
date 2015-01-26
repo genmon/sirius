@@ -10,6 +10,8 @@ import collections
 import messages
 import json
 import logging
+import time
+import gevent
 
 from sirius.coding import encoders
 from sirius.coding import decoders
@@ -28,12 +30,6 @@ logger = logging.getLogger(__name__)
 # process can reply.
 bridge_by_address = dict()
 
-# Map device address to a float timestamp:
-last_seen_by_address = dict()
-
-PrinterDevice = collections.namedtuple(
-    'PrinterDevice', 'address last_heartbeat_timestamp')
-
 
 class BridgeState(object):
     "Ephemeral state of a bridge. Lives as long as the websocket."
@@ -44,6 +40,22 @@ class BridgeState(object):
         self.websocket = websocket
         self.pending_commands = dict()
         self.connected_devices = set()
+        self.last_seen_timestamp = dict()
+
+    def mark_alive(self, device_address):
+        self.connected_devices.add(device_address)
+        self.last_seen_timestamp[device_address] = time.time()
+
+    def mark_dead(self, device_address):
+        self.connected_devices.discard(device_address)
+        self.last_seen_timestamp.pop(device_address, None)
+
+    def mark_dead_by_timeout(self):
+        now = time.time()
+        for device_address, ts in self.last_seen_timestamp.items():
+            if now - ts > 60:
+                logger.debug('Marking as dead: %s', device_address)
+                self.mark_dead(device_address)
 
 
 def _get_next_command_id(local_data={}):
@@ -170,17 +182,17 @@ def _accept_step(x, bridge_state):
     """
     if type(x) == messages.DeviceConnect:
         hardware.Printer.phone_home(x.device_address)
-        bridge_state.connected_devices.add(x.device_address)
+        bridge_state.mark_alive(x.device_address)
 
     elif type(x) == messages.DeviceDisconnect:
-        bridge_state.connected_devices.discard(x.device_address)
+        bridge_state.mark_dead(x.device_address)
 
     elif type(x) == messages.BridgeLog:
         pass  # TODO - write log to a place
 
     elif type(x) == messages.EncryptionKeyRequired:
         hardware.Printer.phone_home(x.device_address)
-        bridge_state.connected_devices.add(x.device_address)
+        bridge_state.mark_alive(x.device_address)
 
         claim_code = hardware.Printer.get_claim_code(x.device_address)
         if claim_code is None:
@@ -199,7 +211,7 @@ def _accept_step(x, bridge_state):
 
     elif type(x) == messages.DeviceHeartbeat:
         hardware.Printer.phone_home(x.device_address)
-        bridge_state.connected_devices.add(x.device_address)
+        bridge_state.mark_alive(x.device_address)
 
     elif type(x) == messages.PowerOn:
         logging.info('Received superfluous PowerOn message. '
@@ -208,7 +220,7 @@ def _accept_step(x, bridge_state):
     elif type(x) == messages.DeviceDidPowerOn:
         # We don't really care about this one other than for debugging
         # maybe.
-        bridge_state.connected_devices.add(x.device_address)
+        bridge_state.mark_alive(x.device_address)
 
     elif type(x) == messages.DeviceDidPrint:
         # TODO - This message is sent for two reasons:
@@ -223,15 +235,36 @@ def _accept_step(x, bridge_state):
             logger.error('Unexpected response (command_id not known) %r', x)
             return
 
+        logger.debug('Got BridgeCommandResponse, ignoring.')
+
     elif type(x) == messages.DeviceCommandResponse:
         if x.command_id not in bridge_state.pending_commands:
             logger.error('Unexpected response (command_id not known) %r', x)
             return
 
+        logger.debug('Ack-ing message with print_id %s', x.command_id)
         model_messages.Message.ack(x.return_code, x.command_id)
-
-        # TODO: some commands need special handling. E.g. what happens
-        # on invalid claim codes? How do we communicate send-errors or
-        # timeouts back to the user?
     else:
         assert False, "Unexpected message {}".format(x)
+
+
+def mark_dead_loop():
+    """Loop forever and mark devices that haven't been online for 60
+    seconds as dead.
+
+    There is a disconnect message but that's unreliable: If the bridge
+    disconnects without a clean TCP shutdown (almost always the case)
+    then the websocket won't close and we will never receive any
+    disconnect message. Timing out is really the only reliable way to
+    do this.
+    """
+    while True:
+        try:
+            for bridge in bridge_by_address.values():
+                bridge.mark_dead_by_timeout()
+
+            gevent.sleep(5)
+
+        except Exception as e:
+            logger.exception('Unexpected exception in mark_offline_loop. Ignoring.')
+            gevent.sleep(5)
