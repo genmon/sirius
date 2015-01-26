@@ -11,6 +11,7 @@ from sirius.models import messages as model_messages
 from sirius.protocol import protocol_loop
 from sirius.protocol import messages
 from sirius.coding import image_encoding
+from sirius import stats
 
 
 blueprint = flask.Blueprint('printer_print', __name__)
@@ -70,10 +71,12 @@ def printer_print(user_id, username, printer_id):
 
         if success:
             flask.flash('Sent your message to the printer!')
+            stats.inc('printer.print.ok')
         else:
             flask.flash(("Could not send message because the "
                          "printer {} is offline.").format(printer.name),
                         'error')
+            stats.inc('printer.print.offline')
 
         # Store the same message in the model.
         model_message = model_messages.Message(
@@ -107,10 +110,9 @@ def preview(user_id, username, printer_id):
     assert username == login.current_user.username
 
     message = flask.request.data
-
-    print "M", message
-
     pixels = image_encoding.html_to_png(
         '<html><body>{}</body></html>'.format(message))
+
+    stats.inc('printer.preview')
 
     return '<img style="width: 6cm;" src="data:image/png;base64,{}">'.format(base64.b64encode(pixels))
