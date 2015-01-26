@@ -35,10 +35,26 @@
 </div>
 
 {% endif %}
-<h1>Friends who can print on my printers</h1>
+<h1>People who can print on my printers</h1>
 <ul>
 {% for x in signed_up_friends %}
 <li>{{ x.username }}</li>
+{% else %}
+<li>No one yet</li>
 {% endfor %}
 </ul>
+<p>
+	The above list is the {{ friends|length }} people you follow on Twitter who also have accounts here.
+</p>
+<p>
+	The list of people you folow was last refreshed on {{ last_friend_refresh }}.
+</p>
+<p>
+	<form method="POST" action="{{ url_for('landing.twitter_friend_refresh',
+				    user_id=current_user.id,
+				    username=current_user.username) }}">
+		{{ form.csrf_token }}
+		<button>Refresh now</button>
+	</form>
+</p>
 {% endblock %}

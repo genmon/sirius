@@ -2,6 +2,7 @@ import flask
 import flask_wtf
 import wtforms
 from flask.ext import login
+import datetime
 
 from sirius.coding import claiming
 from sirius.web import twitter
@@ -29,6 +30,10 @@ class ClaimForm(flask_wtf.Form):
             )
 
 
+class TwitterRefreshFriendsForm(flask_wtf.Form):
+    "CSRF-only form."
+
+
 @blueprint.route('/')
 def landing():
     if not login.current_user.is_authenticated():
@@ -41,18 +46,21 @@ def landing():
 def overview():
     my_printers = login.current_user.printers.all()
 
-    try:
-        friends = twitter.get_friends(login.current_user)
-        signed_up_friends = user.User.query.filter(user.User.username.in_(x.screen_name for x in friends))
-    except Exception:
-        # twitter rate limit
-        signed_up_friends = []
+    friends = login.current_user.twitter_oauth.friends
+    signed_up_friends = user.User.query.filter(
+        user.User.username.in_(x.screen_name for x in friends))
 
+    form = TwitterRefreshFriendsForm()
+
+    # TODO - twitter friends refresh rate limiting.
 
     return flask.render_template(
         'overview.html',
+        form=form,
         my_printers=my_printers,
+        last_friend_refresh=login.current_user.twitter_oauth.last_friend_refresh,
         signed_up_friends=signed_up_friends,
+        friends=friends,
     )
 
 
@@ -73,3 +81,16 @@ def claim(user_id, username):
         'claim.html',
         form=form,
     )
+
+
+@blueprint.route('/<int:user_id>/<username>/twitter-friend-refresh', methods=['POST'])
+@login.login_required
+def twitter_friend_refresh(user_id, username):
+    assert user_id == login.current_user.get_id()
+    assert username == login.current_user.username
+
+    # TODO error handling when hitting twitter rate limit ...
+    login.current_user.twitter_oauth.friends = twitter.get_friends(login.current_user)
+    login.current_user.twitter_oauth.last_friend_refresh = datetime.datetime.utcnow()
+
+    return flask.redirect(flask.url_for('.landing'))

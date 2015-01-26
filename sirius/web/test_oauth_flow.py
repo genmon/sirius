@@ -6,6 +6,10 @@ from sirius.web import webapp
 from sirius.web import twitter
 
 
+# Mock network-accessing function:
+twitter.get_friends = lambda x: []
+
+
 class TestClaiming(testing.TestCase):
     def setUp(self):
         testing.TestCase.setUp(self)
