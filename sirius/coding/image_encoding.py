@@ -71,6 +71,7 @@ def rle_from_bw(bw_image):
     :param bw_image: A mode "1" PIL image.
     :returns: A 2-tuple of (number of pixels, RLE-encoded pixel data)
     """
+    bw_image = bw_image.transpose(Image.ROTATE_180)
     pixels = list(bw_image.getdata())
 
     # Group each run length into lists each list is (result of
