@@ -4,8 +4,6 @@ import logging
 from sqlalchemy import desc
 
 from sirius.models.db import db
-from sirius.models import hardware
-from sirius.models import user
 
 
 logger = logging.getLogger(__name__)

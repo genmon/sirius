@@ -6,7 +6,6 @@ The official API is two functions:
 accept(websocket)
 send_message(device_address, message)
 """
-import collections
 import messages
 import json
 import logging
@@ -17,7 +16,6 @@ from sirius.coding import encoders
 from sirius.coding import decoders
 from sirius import stats
 
-from sirius.models.db import db
 from sirius.models import hardware
 from sirius.models import messages as model_messages
 
@@ -265,6 +263,6 @@ def mark_dead_loop():
 
             gevent.sleep(5)
 
-        except Exception as e:
+        except Exception:
             logger.exception('Unexpected exception in mark_offline_loop. Ignoring.')
             gevent.sleep(5)

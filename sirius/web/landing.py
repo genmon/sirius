@@ -6,7 +6,7 @@ import datetime
 
 from sirius.coding import claiming
 from sirius.web import twitter
-from sirius.models import user
+
 
 blueprint = flask.Blueprint('landing', __name__)
 

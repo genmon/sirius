@@ -16,10 +16,11 @@ from sirius.protocol import protocol_loop
 from sirius import stats
 from sirius import config
 
-# Import models so they get picked up for migrations.
+# Import models so they get picked up for migrations. Do not remove.
 from sirius.models import db
 from sirius.models import hardware
 from sirius.models import user
+from sirius.models import messages
 
 from sirius.web import landing
 from sirius.web import twitter

@@ -1,13 +1,12 @@
 import flask
-from flask.ext import login
 
 from sirius.models import user
 from sirius.models import hardware
 from sirius.models.db import db
-from sirius.web import webapp
 from sirius.testing import base
 
 
+# pylint: disable=no-member
 class TestClaiming(base.Base):
 
     def test_claim_first(self):

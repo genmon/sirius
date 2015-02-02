@@ -2,11 +2,11 @@ from flask.ext import testing
 from flask.ext import login
 
 from sirius.models import user
-from sirius.models import hardware
 from sirius.models.db import db
 from sirius.web import webapp
 
 
+# pylint: disable=no-member
 class Base(testing.TestCase):
     """Common base class for tests that require database interactions.
     """

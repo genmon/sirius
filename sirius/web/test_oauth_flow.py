@@ -10,7 +10,8 @@ from sirius.web import twitter
 twitter.get_friends = lambda x: []
 
 
-class TestClaiming(testing.TestCase):
+# pylint: disable=no-member
+class TestOAuthFlow(testing.TestCase):
     def setUp(self):
         testing.TestCase.setUp(self)
         db.create_all()
