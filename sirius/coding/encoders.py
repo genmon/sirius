@@ -85,7 +85,7 @@ def encode_bridge_command(bridge_address, command, command_id, timestamp):
         })
 
     elif type(command) == messages.SetDeliveryAndPrint:
-        pixel_count, pixels = image_encoding.rle_image(command.pixels)
+        pixel_count, pixels = image_encoding.rle_from_bw(command.pixels)
         return make({
             'binary_payload': base64.b64encode(_encode_printer_message(
                 0x1, pixel_count, pixels, command_id)),
@@ -94,7 +94,7 @@ def encode_bridge_command(bridge_address, command, command_id, timestamp):
         })
 
     elif type(command) == messages.SetDelivery:
-        pixel_count, pixels = image_encoding.rle_image(command.pixels)
+        pixel_count, pixels = image_encoding.rle_from_bw(command.pixels)
         return make({
             'binary_payload': base64.b64encode(_encode_printer_message(
                 0x2, pixel_count, pixels, command_id)),

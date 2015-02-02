@@ -1,3 +1,4 @@
+import io
 import datetime
 import flask
 from flask.ext import login
@@ -57,7 +58,7 @@ def printer_print(user_id, username, printer_id):
     if form.validate_on_submit():
         # TODO: move image encoding into a pthread.
         # TODO: use templating to avoid injection attacks
-        pixels = image_encoding.html_to_png(
+        pixels = image_encoding.default_pipeline(
             '<html><body>{}</body></html>'.format(form.message.data))
         hardware_message = messages.SetDeliveryAndPrint(
             device_address=printer.device_address,
@@ -79,9 +80,11 @@ def printer_print(user_id, username, printer_id):
             stats.inc('printer.print.offline')
 
         # Store the same message in the database.
+        png = io.BytesIO()
+        pixels.save(png, "PNG")
         model_message = model_messages.Message(
             print_id=next_print_id,
-            pixels=bytearray(pixels),
+            pixels=bytearray(png.getvalue()),
             sender_id=login.current_user.id,
             target_printer=printer,
         )
@@ -112,9 +115,11 @@ def preview(user_id, username, printer_id):
     assert username == login.current_user.username
 
     message = flask.request.data
-    pixels = image_encoding.html_to_png(
+    pixels = image_encoding.default_pipeline(
         '<html><body>{}</body></html>'.format(message))
+    png = io.BytesIO()
+    pixels.save(png, "PNG")
 
     stats.inc('printer.preview')
 
-    return '<img style="width: 6cm;" src="data:image/png;base64,{}">'.format(base64.b64encode(pixels))
+    return '<img style="width: 6cm;" src="data:image/png;base64,{}">'.format(base64.b64encode(png.getvalue()))
