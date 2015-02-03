@@ -10,6 +10,10 @@ from sirius.models.db import db
 from sirius.models import hardware
 
 
+class CannotChangeOwner(Exception): pass
+class ClaimCodeInUse(Exception): pass
+
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
@@ -37,22 +41,41 @@ class User(db.Model):
         """Claiming can happen before the printer "calls home" for the first
         time so we need to be able to deal with that."""
 
+        claim_code = claiming.canonicalize(claim_code)
+
+        hcc = hardware.ClaimCode.query.filter_by(claim_code=claim_code).first()
         hardware_xor, _ = claiming.process_claim_code(claim_code)
-        hcc = hardware.ClaimCode(
-            by_id=self.id,
-            hardware_xor=hardware_xor,
-            claim_code=claim_code,
-            name=name,
-        )
-        db.session.add(hcc)
+
+        if hcc is not None and hcc.by != self:
+            raise ClaimCodeInUse(
+                "Claim code {} already claimed by {}".format(
+                    claim_code, hcc.by))
+
+        if hcc is None:
+            hcc = hardware.ClaimCode(
+                by_id=self.id,
+                hardware_xor=hardware_xor,
+                claim_code=claim_code,
+                name=name,
+            )
+            db.session.add(hcc)
+        else:
+            # we already have a claim code, don't do anything.
+            pass
 
         # Check whether we've seen this printer and if so: connect it
-        # to claim code and make it "owned".
+        # to claim code and make it "owned" but *only* if it does not
+        # have an owner yet.
         printer_query = hardware.Printer.query.filter_by(
             hardware_xor=hardware_xor)
         printer = printer_query.first()
         if printer is None:
             return
+
+        if printer.owner is not None:
+            raise CannotChangeOwner(
+                "Printer {} already owned by {}. Cannot claim for {}.".format(
+                    printer, printer.owner, self))
 
         assert printer_query.count() == 1, \
             "hardware xor collision: {}".format(hardware_xor)

@@ -35,7 +35,7 @@ class Printer(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     owner = db.relationship('User', backref=db.backref('printers', lazy='dynamic'))
 
-    used_claim_code = db.Column(db.String, nullable=True)
+    used_claim_code = db.Column(db.String, nullable=True, unique=True)
 
     def __repr__(self):
         return 'Printer {}, xor: {}, owner: {}'.format(
@@ -99,8 +99,9 @@ class ClaimCode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     by_id = db.Column(db.ForeignKey('user.id'))
+    by = db.relationship('User', backref=db.backref('claim_codes', lazy='dynamic'))
     hardware_xor = db.Column(db.Integer)
-    claim_code = db.Column(db.String)
+    claim_code = db.Column(db.String, unique=True)
 
     # Intended name of printer; used for display purposes.
     name = db.Column(db.String)

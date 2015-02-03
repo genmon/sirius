@@ -59,6 +59,11 @@ CLAIMCODE_BASE32_DICT = {
 CC_ENCODE_LIST = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
                   'j', 'k', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']
 
+
+def canonicalize(claim_code):
+    return claim_code.upper().replace('L', '1').replace('I', '1').replace('U', 'V')
+
+
 class InvalidClaimCode(Exception):
     pass
 
