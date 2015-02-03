@@ -125,7 +125,8 @@ def html_to_png(html):
 
         return data
     finally:
-        driver.quit()
+        if driver:
+            driver.quit()
 
 
 def default_pipeline(html):
