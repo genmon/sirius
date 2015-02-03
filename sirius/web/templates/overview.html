@@ -70,7 +70,12 @@
 				    user_id=current_user.id,
 				    username=current_user.username) }}">
 		{{ form.csrf_token }}
+		{% if seconds_to_next_refresh > 0 %}
+		<button disabled>Please wait {{ "%d"|format(seconds_to_next_refresh // 60) }} minutes</button>
+		{% else %}
 		<button>Refresh now</button>
+		{% endif %}
+
 	</form>
 </p>
 {% endblock %}

@@ -132,4 +132,11 @@ class TwitterOAuth(db.Model):
         if utcnow is None:
             utcnow = datetime.datetime.utcnow()
 
-        return (utcnow - self.last_friend_refresh).total_seconds()
+        if self.last_friend_refresh is None:
+            return 0
+
+        seconds_since_refresh = (
+            utcnow - self.last_friend_refresh
+        ).total_seconds() - 3600
+
+        return abs(min(seconds_since_refresh, 0))
