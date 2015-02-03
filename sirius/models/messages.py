@@ -49,7 +49,10 @@ class Message(db.Model):
             utcnow = datetime.datetime.utcnow()
         cutoff = utcnow - datetime.timedelta(seconds=TIMEOUT_SECONDS)
 
-        cls.query.filter(cls.created <= cutoff).update(dict(
+        cls.query.filter(
+            cls.created <= cutoff,
+            cls.response_timestamp == None
+        ).update(dict(
             response_timestamp=utcnow,
             failure_message="Timed out",
         ))
