@@ -84,17 +84,26 @@ SetDeliveryNoFace = namedtuple('SetDeliveryNoFace', [
 
 SetPersonality = namedtuple('SetPersonality', [
     'device_address',
-    'pixels',
+    'face_pixels',
+    'nothing_to_print_pixels',
+    'cannot_see_bridge_pixels',
+    'cannot_see_internet_pixels',
 ])
 
-SetPersonality = namedtuple('SetPersonalityWithMessage', [
+SetPersonalityWithMessage = namedtuple('SetPersonalityWithMessage', [
     'device_address',
-    'pixels',
+    'face_pixels',
+    'nothing_to_print_pixels',
+    'cannot_see_bridge_pixels',
+    'cannot_see_internet_pixels',
+    'message_pixels',
 ])
 
-SetQuip = namedtuple('SetPersonalityWithMessage', [
+SetQuip = namedtuple('SerQuip', [
     'device_address',
-    'pixels',
+    'quip_pixels_1',
+    'quip_pixels_2',
+    'quip_pixels_3', # Don't know what these are yet.
 ])
 
 SetLogLevel = namedtuple('SetLogLevel', [
