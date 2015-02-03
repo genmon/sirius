@@ -72,7 +72,7 @@ class User(db.Model):
         if printer is None:
             return
 
-        if printer.owner is not None:
+        if printer.owner is not None and printer.owner != self:
             raise CannotChangeOwner(
                 "Printer {} already owned by {}. Cannot claim for {}.".format(
                     printer, printer.owner, self))
