@@ -5,7 +5,12 @@
 {% block page_content %}
 <h1>Admin!</h1>
 
-<form method="post">
+<form method="post" action="/admin/randomly-change-personality">
 	<button>change personality randomly</button>
 </form>
+
+<form method="post" action="/admin/randomly-change-quip">
+	<button>change quip randomly</button>
+</form>
+
 {% endblock %}
