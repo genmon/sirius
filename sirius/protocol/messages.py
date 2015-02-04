@@ -99,7 +99,7 @@ SetPersonalityWithMessage = namedtuple('SetPersonalityWithMessage', [
     'message_pixels',
 ])
 
-SetQuip = namedtuple('SerQuip', [
+SetQuip = namedtuple('SetQuip', [
     'device_address',
     'quip_pixels_1',
     'quip_pixels_2',

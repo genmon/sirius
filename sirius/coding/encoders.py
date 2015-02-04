@@ -147,5 +147,32 @@ def encode_bridge_command(bridge_address, command, command_id, timestamp):
             'type': 'DeviceCommand',
         })
 
-    else:
-        assert False, "unknown command type: {}".format(command)
+    elif type(command) == messages.SetPersonalityWithMessage:
+        payload = (
+            _payload_from_pixels(command.face_pixels)
+            + _payload_from_pixels(command.nothing_to_print_pixels)
+            + _payload_from_pixels(command.cannot_see_bridge_pixels)
+            + _payload_from_pixels(command.cannot_see_internet_pixels)
+            + _payload_from_pixels(command.message_pixels))
+
+        return make({
+            'binary_payload': base64.b64encode(_encode_printer_message(
+                0x0101, payload, command_id)),
+            'device_address': command.device_address,
+            'type': 'DeviceCommand',
+        })
+
+    elif type(command) == messages.SetQuip:
+        payload = (
+            _payload_from_pixels(command.quip_pixels_1)
+            + _payload_from_pixels(command.quip_pixels_2)
+            + _payload_from_pixels(command.quip_pixels_3))
+
+        return make({
+            'binary_payload': base64.b64encode(_encode_printer_message(
+                0x202, payload, command_id)),
+            'device_address': command.device_address,
+            'type': 'DeviceCommand',
+        })
+
+    assert False, "unknown command type: {}".format(command)
