@@ -126,7 +126,7 @@ def encode_bridge_command(bridge_address, command, command_id, timestamp):
 
         return make({
             'binary_payload': base64.b64encode(_encode_printer_message(
-                0x2, payload, command_id)),
+                0x0102, payload, command_id)),
             'device_address': command.device_address,
             'type': 'DeviceCommand',
         })
