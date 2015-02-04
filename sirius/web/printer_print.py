@@ -12,6 +12,7 @@ from sirius.models import messages as model_messages
 from sirius.protocol import protocol_loop
 from sirius.protocol import messages
 from sirius.coding import image_encoding
+from sirius.coding import templating
 from sirius import stats
 
 
@@ -51,7 +52,7 @@ def printer_print(user_id, username, printer_id):
     ]
     form.target_printer.choices = choices
 
-    # Set default value on get
+    # Set default printer on get
     if flask.request.method != 'POST':
         form.target_printer.data = printer.id
 
@@ -59,7 +60,7 @@ def printer_print(user_id, username, printer_id):
         # TODO: move image encoding into a pthread.
         # TODO: use templating to avoid injection attacks
         pixels = image_encoding.default_pipeline(
-            '<html><body>{}</body></html>'.format(form.message.data))
+            templating.default_template(form.message.data))
         hardware_message = messages.SetDeliveryAndPrint(
             device_address=printer.device_address,
             pixels=pixels,
@@ -116,7 +117,7 @@ def preview(user_id, username, printer_id):
 
     message = flask.request.data
     pixels = image_encoding.default_pipeline(
-        '<html><body>{}</body></html>'.format(message))
+        templating.default_template(message))
     png = io.BytesIO()
     pixels.save(png, "PNG")
 
