@@ -117,6 +117,22 @@ def encode_bridge_command(bridge_address, command, command_id, timestamp):
             'type': 'DeviceCommand',
         })
 
+    elif type(command) == messages.SetDeliveryAndPrintNoFace:
+        return make({
+            'binary_payload': base64.b64encode(_encode_printer_message(
+                0x11, _payload_from_pixels(command.pixels), command_id)),
+            'device_address': command.device_address,
+            'type': 'DeviceCommand',
+        })
+
+    elif type(command) == messages.SetDeliveryNoFace:
+        return make({
+            'binary_payload': base64.b64encode(_encode_printer_message(
+                0x12, _payload_from_pixels(command.pixels), command_id)),
+            'device_address': command.device_address,
+            'type': 'DeviceCommand',
+        })
+
     elif type(command) == messages.SetPersonality:
         payload = (
             _payload_from_pixels(command.face_pixels)
