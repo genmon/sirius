@@ -5,6 +5,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'this is the lp2 secret'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
+    # printer not seen for 60 seconds: Mark offline.
+    PRINTER_OFFLINE_CUTOFF_SECONDS = 60
 
     @staticmethod
     def init_app(app):

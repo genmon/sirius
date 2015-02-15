@@ -4,14 +4,14 @@ import struct
 import io
 import tempfile
 
-WHITE = 0
-BLACK = 1
+WHITE = '\xff'
+BLACK = '\x00'
 THRESHOLD = 127
 TRANSLATE = [(1536, 255), (1152, 254), (768, 253), (384, 252), (251, 251)]
 
 
 def pixel_to_bw(p):
-    if p == (0, 0, 0, 0):
+    if p == (0, 0, 0, 0): # 0 alpha means white.
         return WHITE
     elif p[0] > THRESHOLD or p[1] > THRESHOLD or p[2] > THRESHOLD:
         return WHITE
@@ -56,18 +56,27 @@ def rle(lengths):
                     yield remainder
 
 
-def rle_image(data):
+def crop_384(im):
+    w, h = im.size
+    return im.crop((0, 0, 384, min(h, 10000)))
+
+
+def threshold(im):
+    thresholded = ''.join(pixel_to_bw(x) for x in im.convert('RGBA').getdata())
+    return Image.fromstring('L', im.size, thresholded)
+
+
+def rle_from_bw(bw_image):
     """
-    :param data: A python bytearray containing a PNG.
+    :param bw_image: A mode "1" PIL image.
     :returns: A 2-tuple of (number of pixels, RLE-encoded pixel data)
     """
-    im = Image.open(io.BytesIO(data))
-    im = im.convert('RGBA')
-    pixels = im.getdata()
+    bw_image = bw_image.transpose(Image.ROTATE_180)
+    pixels = list(bw_image.getdata())
 
-    # convert to B&W and group each run length into lists
-    # each list is (result of identity function, [actual pixels])
-    grouped = groupby(pixels, pixel_to_bw)
+    # Group each run length into lists each list is (result of
+    # identity function, [actual pixels])
+    grouped = groupby(pixels)
 
     # create list of tuples (WHITE|BLACK, run_length)
     groups = []
@@ -76,7 +85,7 @@ def rle_image(data):
 
     # the decoder assumes that the first run is white, so if the
     # first pixel is black, add a zero run of white
-    if groups[k][0] == BLACK:
+    if groups[0][0] == BLACK:
         groups.insert(0, (WHITE, 0))
 
     # encode using our custom encoding
@@ -112,8 +121,17 @@ def html_to_png(html):
             f.write(html)
             f.flush()
             driver.get('file://' + f.name)
-            data = driver.get_screenshot_as_png()
+            data = io.BytesIO(driver.get_screenshot_as_png())
 
         return data
     finally:
-        driver.quit()
+        if driver:
+            driver.quit()
+
+
+def default_pipeline(html):
+    """Encode HTML into an RLE image."""
+    data = html_to_png(html)
+    image = Image.open(data)
+    image = crop_384(image)
+    return threshold(image)

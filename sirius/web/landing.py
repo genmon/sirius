@@ -2,10 +2,11 @@ import flask
 import flask_wtf
 import wtforms
 from flask.ext import login
+import datetime
 
 from sirius.coding import claiming
 from sirius.web import twitter
-from sirius.models import user
+
 
 blueprint = flask.Blueprint('landing', __name__)
 
@@ -29,6 +30,10 @@ class ClaimForm(flask_wtf.Form):
             )
 
 
+class TwitterRefreshFriendsForm(flask_wtf.Form):
+    "CSRF-only form."
+
+
 @blueprint.route('/')
 def landing():
     if not login.current_user.is_authenticated():
@@ -39,32 +44,37 @@ def landing():
 
 @login.login_required
 def overview():
-    my_printers = login.current_user.printers.all()
+    user = login.current_user
+    my_printers = user.printers.all()
 
-    try:
-        friends = twitter.get_friends(login.current_user)
-        signed_up_friends = user.User.query.filter(user.User.username.in_(x.screen_name for x in friends))
-    except Exception:
-        # twitter rate limit
-        signed_up_friends = []
+    friends, signed_up_friends = user.signed_up_friends()
+    form = TwitterRefreshFriendsForm()
 
+    friends_printers = user.friends_printers()
+
+    # TODO - twitter friends refresh rate limiting.
 
     return flask.render_template(
         'overview.html',
+        form=form,
         my_printers=my_printers,
         signed_up_friends=signed_up_friends,
+        friends=friends,
+        friends_printers=friends_printers,
+        seconds_to_next_refresh=user.twitter_oauth.seconds_to_next_refresh(),
     )
 
 
 @blueprint.route('/<int:user_id>/<username>/claim', methods=['GET', 'POST'])
 @login.login_required
 def claim(user_id, username):
-    assert user_id == login.current_user.get_id()
-    assert username == login.current_user.username
+    user = login.current_user
+    assert user_id == user.get_id()
+    assert username == user.username
 
     form = ClaimForm()
     if form.validate_on_submit():
-        login.current_user.claim_printer(
+        user.claim_printer(
             form.claim_code.data,
             form.printer_name.data)
         return flask.redirect(flask.url_for('.landing'))
@@ -73,3 +83,19 @@ def claim(user_id, username):
         'claim.html',
         form=form,
     )
+
+
+@blueprint.route('/<int:user_id>/<username>/twitter-friend-refresh', methods=['POST'])
+@login.login_required
+def twitter_friend_refresh(user_id, username):
+    user = login.current_user
+    assert user_id == login.current_user.get_id()
+    assert username == login.current_user.username
+
+    assert user.twitter_oauth.seconds_to_next_refresh() == 0
+
+    # TODO error handling when hitting twitter rate limit ...
+    login.current_user.twitter_oauth.friends = twitter.get_friends(login.current_user)
+    login.current_user.twitter_oauth.last_friend_refresh = datetime.datetime.utcnow()
+
+    return flask.redirect(flask.url_for('.landing'))

@@ -46,6 +46,7 @@ def claim(device_address, owner, code, name):
     user = user_model.User.query.filter_by(username=owner).first()
     if user is None:
         print("User not found: {}".format(owner))
+        return
 
     hardware.Printer.phone_home(device_address)
     user.claim_printer(code, name)

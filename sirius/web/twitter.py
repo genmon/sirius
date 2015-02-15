@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-import collections
+import datetime
 import flask
 from gevent import pool
 from flask.ext import oauth
@@ -8,11 +8,9 @@ from flask.ext import login
 
 import twitter as twitter_api
 
-from sirius.models import user
+from sirius.models import user as user_model
 from sirius.models.db import db
 
-
-Friend = collections.namedtuple('Friend', 'screen_name name profile_image_url')
 
 blueprint = flask.Blueprint('twitter_oauth', __name__)
 oauth_app = oauth.OAuth()
@@ -69,22 +67,28 @@ def process_authorization(token, token_secret, screen_name, next_url):
     flask.session['twitter_token'] = (token, token_secret)
     flask.session['twitter_screen_name'] = screen_name
 
-    oauth = user.TwitterOAuth.query.filter_by(
+    oauth = user_model.TwitterOAuth.query.filter_by(
         screen_name=screen_name,
     ).first()
 
     # Create local user model for keying resources (e.g. claim codes)
     # if we haven't seen this twitter user before.
     if oauth is None:
-        new_user = user.User(
+        new_user = user_model.User(
             username=screen_name,
         )
-        oauth = user.TwitterOAuth(
+
+        oauth = user_model.TwitterOAuth(
             user=new_user,
             screen_name=screen_name,
             token=token,
             token_secret=token_secret,
+            last_friend_refresh=datetime.datetime.utcnow(),
         )
+
+        # Fetch friends list from twitter. TODO: error handling.
+        friends = get_friends(new_user)
+        oauth.friends = friends
 
         db.session.add(new_user)
         db.session.add(oauth)
@@ -116,10 +120,10 @@ def get_friends(user):
             lambda ids: api.users.lookup(user_id=','.join(str(id) for id in ids)),
             chunk(friend_ids, 100)):
         for r in result:
-            friends.append(Friend(
+            friends.append(user_model.Friend(
                 screen_name=r['screen_name'],
                 name=r['name'],
                 profile_image_url=r['profile_image_url'],
             ))
 
-    return friends
+    return sorted(friends)

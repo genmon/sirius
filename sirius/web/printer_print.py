@@ -1,3 +1,5 @@
+import io
+import datetime
 import flask
 from flask.ext import login
 import flask_wtf
@@ -10,6 +12,8 @@ from sirius.models import messages as model_messages
 from sirius.protocol import protocol_loop
 from sirius.protocol import messages
 from sirius.coding import image_encoding
+from sirius.coding import templating
+from sirius import stats
 
 
 blueprint = flask.Blueprint('printer_print', __name__)
@@ -39,39 +43,57 @@ def printer_print(user_id, username, printer_id):
 
     form = PrintForm()
     # Note that the form enforces access permissions: People can't
-    # submit a valid printer-id that's not owned by the user:
-    form.target_printer.choices = [
-        (x.id, x.name) for x in login.current_user.printers.all()]
-    form.target_printer.data = printer.id
+    # submit a valid printer-id that's not owned by the user or one of
+    # the user's friends.
+    choices = [
+        (x.id, x.name) for x in login.current_user.printers
+    ] + [
+        (x.id, x.name) for x in login.current_user.friends_printers()
+    ]
+    form.target_printer.choices = choices
+
+    # Set default printer on get
+    if flask.request.method != 'POST':
+        form.target_printer.data = printer.id
 
     if form.validate_on_submit():
-        flask.flash('Sent your message to the printer!')
-
         # TODO: move image encoding into a pthread.
         # TODO: use templating to avoid injection attacks
-        pixels = image_encoding.html_to_png(
-            '<html><body>{}</body></html>'.format(form.message.data))
+        pixels = image_encoding.default_pipeline(
+            templating.default_template(form.message.data))
         hardware_message = messages.SetDeliveryAndPrint(
             device_address=printer.device_address,
             pixels=pixels,
         )
 
-        # Note that we don't really handle the case of a disconnected
-        # printer yet. It f the printer isn't connected we'll silently
-        # swallow the message.
-        next_print_id = protocol_loop.send_message(printer.device_address, hardware_message)
+        # If a printer is "offline" then we won't find the printer
+        # connected and success will be false.
+        success, next_print_id = protocol_loop.send_message(
+            printer.device_address, hardware_message)
 
-        if next_print_id is False:
-            pass # TODO - note immediately that we could not print in
-                 # failure_message.
+        if success:
+            flask.flash('Sent your message to the printer!')
+            stats.inc('printer.print.ok')
+        else:
+            flask.flash(("Could not send message because the "
+                         "printer {} is offline.").format(printer.name),
+                        'error')
+            stats.inc('printer.print.offline')
 
-        # Store the same message in the model.
+        # Store the same message in the database.
+        png = io.BytesIO()
+        pixels.save(png, "PNG")
         model_message = model_messages.Message(
             print_id=next_print_id,
-            pixels=bytearray(pixels),
+            pixels=bytearray(png.getvalue()),
             sender_id=login.current_user.id,
             target_printer=printer,
         )
+
+        # We know immediately if the printer wasn't online.
+        if not success:
+            model_message.failure_message = 'Printer offline'
+            model_message.response_timestamp = datetime.datetime.utcnow()
         db.session.add(model_message)
 
         return flask.redirect(flask.url_for(
@@ -94,10 +116,11 @@ def preview(user_id, username, printer_id):
     assert username == login.current_user.username
 
     message = flask.request.data
+    pixels = image_encoding.default_pipeline(
+        templating.default_template(message))
+    png = io.BytesIO()
+    pixels.save(png, "PNG")
 
-    print "M", message
+    stats.inc('printer.preview')
 
-    pixels = image_encoding.html_to_png(
-        '<html><body>{}</body></html>'.format(message))
-
-    return '<img style="width: 6cm;" src="data:image/png;base64,{}">'.format(base64.b64encode(pixels))
+    return '<img style="width: 6cm;" src="data:image/png;base64,{}">'.format(base64.b64encode(png.getvalue()))

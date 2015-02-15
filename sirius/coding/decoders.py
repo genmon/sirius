@@ -196,9 +196,9 @@ def _decode_device_event(data):
         reset_description = DeviceEventConst.RESET_DICT.get(resetDescription & 0xff00)
         if reset_description is None:
             return messages.MalformedEvent(
-                data, 'Invalid reset description. {}'.foemat(resetDescription))
+                data, 'Invalid reset description. {}'.format(resetDescription))
 
-        return messages.DevicePowerOn(
+        return messages.DeviceDidPowerOn(
             device_address=device_address,
             device_type=deviceType,
             firmware_build_version=firmwareBuildVersion,
@@ -213,7 +213,7 @@ def _decode_device_event(data):
                 data, 'Invalid BC_EVENT_PRODUCT_ANNOUNCE. Is {}. Expected 20.'.format(payload_length))
 
         id0, id1, id2, id3, version =  struct.unpack_from(">LLLLL", binary, offset)
-        return messages.ProductAnnounce(
+        return messages.BergCloudProductAnnounce(
             device_address=device_address,
             product_id='%08x%08x%08x%08x' % (id0, id1, id2, id3),
             product_version=version,

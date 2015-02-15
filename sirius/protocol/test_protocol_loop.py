@@ -107,6 +107,7 @@ class FakeWebsocket:
         self.messages.append(message)
 
 
+# pylint: disable=no-member
 class TestNormalFlow(BaseTest):
     "A bunch of smoke tests that exercise the _accept_step."
     def setUp(self):

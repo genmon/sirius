@@ -31,14 +31,51 @@
                          user_id=current_user.id,
                          username=current_user.username) }}">
 		Claim another printer
-	</a>.
+	</a>
 </div>
 
+<h2>Friends' printers</h2>
+<ul>
+{% for x in friends_printers %}
+<li>
+	{{ x.owner.username }} - {{ x.name }}
+
+	(<a href="{{ url_for('printer_print.printer_print',
+		  user_id=current_user.id,
+		  username=current_user.username,
+		  printer_id=x.id) }}">send message</a>)
+</li>
+{% else %}
+<li>No printers yet.</li>
+{% endfor %}
+</ul>
+
 {% endif %}
-<h1>Friends who can print on my printers</h1>
+<h2>People who can print on my printers</h2>
 <ul>
 {% for x in signed_up_friends %}
 <li>{{ x.username }}</li>
+{% else %}
+<li>No one yet</li>
 {% endfor %}
 </ul>
+<p>
+	The above list is the {{ friends|length }} people you follow on Twitter who also have accounts here.
+</p>
+<p>
+	The list of people you folow was last refreshed on {{ last_friend_refresh }}.
+</p>
+<p>
+	<form method="POST" action="{{ url_for('landing.twitter_friend_refresh',
+				    user_id=current_user.id,
+				    username=current_user.username) }}">
+		{{ form.csrf_token }}
+		{% if seconds_to_next_refresh > 0 %}
+		<button disabled>Please wait {{ "%d"|format(seconds_to_next_refresh // 60) }} minutes</button>
+		{% else %}
+		<button>Refresh now</button>
+		{% endif %}
+
+	</form>
+</p>
 {% endblock %}

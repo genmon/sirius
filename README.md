@@ -35,6 +35,12 @@ To create a fake friend from twitter who signed up do this:
 $ ./manage.py fake user stephenfry
 ```
 
+You can also claim a printer in somebody else's name:
+
+```console
+$ ./manage.py fake claim b7235a2b432585eb quentinsf 342f-eyh0-korc-msej testprinter
+```
+
 # Sirius Architecture
 
 ## Layers
