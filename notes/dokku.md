@@ -9,16 +9,27 @@ Let's assume the Digital Ocean instance's IP is `104.236.81.129`:
 ```
 export DO=104.236.81.129
 ssh root@${DO} dokku version
-v0.2.3
+v0.3.14
 ```
 
-One needs to run `dokku plugins-install` at least once before the
-system works.
+Add your ssh key:
 
-Note that this triggers apt which wants to overwrite your `nginx.conf`
-file which you don't want. If apt seems stuck then CTRL-C the
-`plugins-install`, run `dpkg --configure -a` and then `dokku
-plugins-install` again.
+```
+cat  ~/.ssh/id_rsa.pub | ssh root@${DO} "sshcommand acl-add dokku username"
+```
+
+# Swap
+
+On a small DO instance you will have to add swap. On the server run:
+
+```
+fallocate -l 4G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+```
+
+# Postgres
 
 We won't be able to run on sqlite in a docker container so we'll use
 postgres via
@@ -27,11 +38,11 @@ postgres via
 ```
 ssh root@${DO}
 cd /var/lib/dokku/plugins
-https://github.com/ohardy/dokku-psql psql
+git clone https://github.com/ohardy/dokku-psql psql
 dokku plugins-install
 ```
 
-Now create the postgres database
+Still on the server, create the postgres database
 
 ```
 dokku psql:start
@@ -41,8 +52,8 @@ dokku psql:create sirius
 
 # Push your sirius app
 
-We set our Digital Ocean instance as the remote with the dokku user as
-our account:
+Back on the local laptop, we set our Digital Ocean instance as the
+remote with the dokku user as our account:
 
 ```
 git remote add dokku dokku@${DO}:sirius
@@ -57,14 +68,13 @@ ssh root@${DO} dokku config:set sirius FLASK_CONFIG=heroku
 ssh root@${DO} dokku run sirius python ./manage.py db upgrade
 ```
 
+# NGinx
 
-# Swap
-
-One way around the memory pressure is to add swap. On the server run:
+We'll have to enable vhost support explicitly in dokku 0.3.x.
 
 ```
-fallocate -l 4G /swapfile
-chmod 600 /swapfile
-mkswap /swapfile
-swapon /swapfile
+ssh root@${DO}
+echo lp > /home/dokku/sirius/VHOST
+echo lp > /home/dokku/HOSTNAME
+dokku nginx:build-config sirius
 ```
