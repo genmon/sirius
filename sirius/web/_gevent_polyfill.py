@@ -3,12 +3,28 @@
 
 # Re-add sslwrap to Python 2.7.9
 import inspect
+import gevent.ssl as ssl2
 __ssl__ = __import__('ssl')
 
 try:
     _ssl = __ssl__._ssl
 except AttributeError:
     _ssl = __ssl__._ssl2
+
+
+orig_SSLSocket = ssl2.SSLSocket
+
+
+class SSLSocketFixed(orig_SSLSocket):
+    def __init__(self, *args, **kwargs):
+        # https://github.com/gevent/gevent/issues/477
+        kwargs.pop('server_hostname', None)
+        kwargs.pop('_context', None)
+        print kwargs
+        orig_SSLSocket.__init__(self, *args, **kwargs)
+
+ssl2.SSLSocket = SSLSocketFixed
+__ssl__.SSLSocket = SSLSocketFixed
 
 
 def new_sslwrap(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=__ssl__.CERT_NONE, ssl_version=__ssl__.PROTOCOL_SSLv23, ca_certs=None, ciphers=None):

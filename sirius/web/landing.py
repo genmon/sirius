@@ -62,6 +62,7 @@ def overview():
         friends=friends,
         friends_printers=friends_printers,
         seconds_to_next_refresh=user.twitter_oauth.seconds_to_next_refresh(),
+        last_friend_refresh=user.twitter_oauth.last_friend_refresh,
     )
 
 
