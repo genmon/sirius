@@ -1,31 +1,51 @@
 {% extends "base.html" %}
 
-{% block title %}Overview{% endblock %}
+{% block title %}{{ printer.name }} | Little Printer{% endblock %}
 
 {% block page_content %}
-<h1>Printer {{ printer.name }}</h1>
+<div class="row">
+	<div class="col-md-8">
 
-<a href="{{ url_for('printer_print.printer_print',
-               printer_id=printer.id) }}">
-	Print a thing
-</a>
+		<h1>
+			{{ printer.name }}
+			<small>
+				Owned by
+				{% if current_user.id == printer.owner.id %}
+				you
+				{% else %}
+				@{{ printer.owner.username }}
+				{% endif %}
+			</small>
+		</h1>
 
-<h2>Messages</h2>
-{% for m in messages %}
-<div>
-	<b>From:</b> {{ m.sender.username }}. <b>Printer:</b> {{ m.target_printer.name }}.<br>
-	<b>Sent:</b>
-	{% if m.response_timestamp == None %}
-	.. still sending ..
-	{% elif m.failure_message == None %}
-	{{ m.response_timestamp.strftime('%d/%m/%Y %H:%M') }}
-	{% else %}
-	<b style="color: red;">{{ m.failure_message }}</b> at {{ m.response_timestamp.strftime('%d/%m/%Y %H:%M') }}
-	{% endif %}
+		<p>
+			<a class="btn btn-default" href="{{
+							url_for('printer_print.printer_print',
+									printer_id=p.id) }}">Send message</a>
+		</p>
+
+		{% if current_user.id == printer.owner.id %}
+		<h2>Recent messages</h2>
+
+		{% for m in messages %}
+		<p>
+			<img src="data:image/png;base64,{{ m.base64_pixels() }}" style="border: 1px solid black;width: 6cm;">
+			<br>
+			From @{{ m.sender.username }} at
+			{% if m.response_timestamp == None %}
+			<span class="bg-info">(still sending)</span>
+			{% else %}
+			{{ m.response_timestamp.strftime('%H:%M, %d/%m/%Y') }}
+			{% endif %}
+			{% if m.failure_message %}
+			<br>
+			Message failed: <span class="bg-danger">{{ m.failure_message }}</span>
+			{% endif %}
+		</p>
+		{% endfor %}
+		
+		{% endif %}
+
+	</div>
 </div>
-<div style="margin-bottom: 30px;">
-	<img src="data:image/png;base64,{{ m.base64_pixels() }}" style="border: 1px solid black;width: 6cm;"><br>
-</div>
-
-{% endfor %}
 {% endblock %}
