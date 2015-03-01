@@ -21,7 +21,7 @@
 		<p>
 			<a class="btn btn-default" href="{{
 							url_for('printer_print.printer_print',
-									printer_id=p.id) }}">Send message</a>
+									printer_id=printer.id) }}">Send message</a>
 		</p>
 
 		{% if current_user.id == printer.owner.id %}
