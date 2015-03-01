@@ -3,79 +3,86 @@
 {% block title %}Overview{% endblock %}
 
 {% block page_content %}
-<h1>My printers</h1>
-{% if not my_printers %}
-<div>
-	No printers yet -
-	<a href="{{ url_for('landing.claim',
-                         user_id=current_user.id,
-                         username=current_user.username) }}">
-		claim one here
-	</a>.
-</div>
-{% else %}
-{% for printer in my_printers %}
-<ul>
-	<li>
-		<a href="{{ url_for('printer_overview.printer_overview',
-                               user_id=current_user.id,
-                               username=current_user.username,
-                               printer_id=printer.id) }}">
-			{{ printer.name }}</a>
-	</li>
-</ul>
-{% endfor %}
+<div class="row">
+	<div class="col-md-8">
 
-<div>
-	<a href="{{ url_for('landing.claim',
-                         user_id=current_user.id,
-                         username=current_user.username) }}">
-		Claim another printer
-	</a>
-</div>
-
-<h2>Friends' printers</h2>
-<ul>
-{% for x in friends_printers %}
-<li>
-	{{ x.owner.username }} - {{ x.name }}
-
-	(<a href="{{ url_for('printer_print.printer_print',
-		  user_id=current_user.id,
-		  username=current_user.username,
-		  printer_id=x.id) }}">send message</a>)
-</li>
-{% else %}
-<li>No printers yet.</li>
-{% endfor %}
-</ul>
-
-{% endif %}
-<h2>People who can print on my printers</h2>
-<ul>
-{% for x in signed_up_friends %}
-<li>{{ x.username }}</li>
-{% else %}
-<li>No one yet</li>
-{% endfor %}
-</ul>
-<p>
-	The above list is the {{ friends|length }} people you follow on Twitter who also have accounts here.
-</p>
-<p>
-	The list of people you folow was last refreshed on {{ last_friend_refresh }}.
-</p>
-<p>
-	<form method="POST" action="{{ url_for('landing.twitter_friend_refresh',
-				    user_id=current_user.id,
-				    username=current_user.username) }}">
-		{{ form.csrf_token }}
-		{% if seconds_to_next_refresh > 0 %}
-		<button disabled>Please wait {{ "%d"|format(seconds_to_next_refresh // 60) }} minutes</button>
-		{% else %}
-		<button>Refresh now</button>
+		<h1>Printers</h1>
+		
+		{% if not my_printers and not friends_printers %}
+		<p><em class="bg-warning">None available</em></p>
 		{% endif %}
+		
+		<ul>
 
-	</form>
-</p>
+		{% for p in my_printers %}
+		<li>{{ p.name }} (owned by you)
+			<a class="btn btn-default btn-xs" href="{{
+							url_for('printer_overview.printer_overview',
+									user_id=current_user.id,
+									username=current_user.username,
+									printer_id=p.id) }}">Overview</a>
+			<a class="btn btn-default btn-xs" href="{{
+							url_for('printer_overview.printer_print',
+									user_id=current_user.id,
+									username=current_user.username,
+									printer_id=p.id) }}">Send message</a>
+		</li>
+		{% endfor %}
+		
+		{% for p in friends_printers %}
+		<li>{{ p.name }} (owned by @{{ p.owner.username }})
+			<a class="btn btn-default btn-xs" href="{{
+					 		url_for('printer_print.printer_print',
+								user_id=current_user.id,
+								username=current_user.username,
+								printer_id=p.id) }}">Send message</a>
+		</li>
+		{% endfor %}
+
+		</ul>
+		
+		<p>
+		<a class="btn btn-default" href="{{ url_for('landing.claim',
+										user_id=current_user.id,
+										username=current_user.username) }}">
+			Claim a printer
+		</a>
+		</p>
+		<p>
+		(You need the claim code from a new or reset Little Printer to do this. <strong>Important:</strong> Your Berg Cloud Bridge must be configured to connect to <em>alpha.littleprinter.com</em> otherwise this won't work.)
+		</p>
+		
+		
+		<h1>Messaging permissions</h1>
+		
+		<p>Anybody you follow on Twitter can send a message to any of your printers. These are the {{ friends|length }} account(s) you follow who also have accounts here:</p>
+		
+		{% if signed_up_friends %}
+			<ul>
+			{% for f in signed_up_friends %}
+			<li>@{{ f.username }}</li>
+			{% endfor %}
+			</ul>
+		{% else %}
+			<p><em class="bg-warning">No-one yet</em></p>
+		{% endif %}
+		
+		<form method="POST" action="{{ url_for('landing.twitter_friend_refresh',
+										user_id=current_user.id,
+										username=current_user.username) }}">
+		{{ form.csrf_token }}
+		<p>
+		{% if seconds_to_next_refresh > 0 %}
+		<button class="btn btn-default" disabled="disabled">Please wait {{ "%d"|format(seconds_to_next_refresh // 60) }} minutes to refresh</button>
+		{% else %}
+		<button class="btn btn-default" type="submit">Refresh messaging permissions</button>
+		{% endif %}
+		</p>
+		<p>
+		(The list of people you follow on Twitter was last refreshed on {{ last_friend_refresh }}.)
+		</p>
+		</form>
+
+	</div>
+</div>
 {% endblock %}

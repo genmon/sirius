@@ -61,9 +61,9 @@ def overview():
         'overview.html',
         form=form,
         my_printers=my_printers,
-        signed_up_friends=signed_up_friends,
+        signed_up_friends=list(signed_up_friends),
         friends=friends,
-        friends_printers=friends_printers,
+        friends_printers=list(friends_printers),
         seconds_to_next_refresh=user.twitter_oauth.seconds_to_next_refresh(),
         last_friend_refresh=user.twitter_oauth.last_friend_refresh,
     )
