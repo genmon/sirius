@@ -21,8 +21,6 @@
 									printer_id=p.id) }}">Overview</a>
 			<a class="btn btn-default btn-xs" href="{{
 							url_for('printer_print.printer_print',
-									user_id=current_user.id,
-									username=current_user.username,
 									printer_id=p.id) }}">Send message</a>
 		</li>
 		{% endfor %}
@@ -31,8 +29,6 @@
 		<li>{{ p.name }} (owned by @{{ p.owner.username }})
 			<a class="btn btn-default btn-xs" href="{{
 					 		url_for('printer_print.printer_print',
-								user_id=current_user.id,
-								username=current_user.username,
 								printer_id=p.id) }}">Send message</a>
 		</li>
 		{% endfor %}

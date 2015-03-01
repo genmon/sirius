@@ -32,13 +32,22 @@ class PrintForm(flask_wtf.Form):
 
 
 @login.login_required
-@blueprint.route('/<int:user_id>/<username>/printer/<int:printer_id>/print', methods=['GET', 'POST'])
-def printer_print(user_id, username, printer_id):
-    assert user_id == login.current_user.id
-    assert username == login.current_user.username
-
+@blueprint.route('/printer/<int:printer_id>/print', methods=['GET', 'POST'])
+def printer_print(printer_id):
     printer = hardware.Printer.query.get(printer_id)
     if printer is None:
+        flask.abort(404)
+
+    # PERMISSIONS
+    # the printer must either belong to this user, or be
+    # owned by a friend
+    if printer.owner.id == login.current_user.id:
+        # fine
+        pass
+    elif printer.id in [p.id for p in login.current_user.friends_printers()]:
+        # fine
+        pass
+    else:
         flask.abort(404)
 
     form = PrintForm()
