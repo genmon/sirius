@@ -98,8 +98,6 @@ def printer_print(user_id, username, printer_id):
 
         return flask.redirect(flask.url_for(
             'printer_overview.printer_overview',
-            user_id=login.current_user.id,
-            username=login.current_user.username,
             printer_id=printer.id))
 
     return flask.render_template(

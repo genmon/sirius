@@ -18,8 +18,6 @@
 		<li>{{ p.name }} (owned by you)
 			<a class="btn btn-default btn-xs" href="{{
 							url_for('printer_overview.printer_overview',
-									user_id=current_user.id,
-									username=current_user.username,
 									printer_id=p.id) }}">Overview</a>
 			<a class="btn btn-default btn-xs" href="{{
 							url_for('printer_print.printer_print',
