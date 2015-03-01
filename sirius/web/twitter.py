@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import os
 import datetime
 import flask
 from gevent import pool
@@ -23,8 +24,8 @@ twitter = oauth_app.remote_app(
     request_token_url='https://api.twitter.com/oauth/request_token',
     access_token_url='https://api.twitter.com/oauth/access_token',
     authorize_url='https://api.twitter.com/oauth/authenticate',
-    consumer_key='DdrpQ1uqKuQouwbCsC6OMA4oF',
-    consumer_secret='S8XGuhptJ8QIJVmSuIk7k8wv3ULUfMiCh9x1b19PmKSsBh1VDM',
+    consumer_key=os.environ.get('TWITTER_CONSUMER_KEY', 'DdrpQ1uqKuQouwbCsC6OMA4oF'),
+    consumer_secret=os.environ.get('TWITTER_CONSUMER_SECRET', 'S8XGuhptJ8QIJVmSuIk7k8wv3ULUfMiCh9x1b19PmKSsBh1VDM'),
 )
 
 

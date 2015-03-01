@@ -11,6 +11,24 @@ $ bin/gunicorn -k flask_sockets.worker sirius.server:app -b 0.0.0.0:5002 -w 1
 Navigate browser to http://127.0.0.1:5002/
 
 
+## Environment variables
+
+The server can be configured with the following variables:
+
+```
+TWITTER_CONSUMER_KEY=...
+TWITTER_CONSUMER_SECRET=...
+FLASK_CONFIG=...
+```
+
+For dokku this means using e.g.:
+
+```
+dokku config:set sirius FLASK_CONFIG=heroku
+dokku config:set sirius TWITTER_CONSUMER_KEY=DdrpQ1uqKuQouwbCsC6OMA4oF
+dokku config:set sirius TWITTER_CONSUMER_SECRET=S8XGuhptJ8QIJVmSuIk7k8wv3ULUfMiCh9x1b19PmKSsBh1VDM
+```
+
 ## Creating fake printers and friends
 
 Resetting the actual hardware all the time gets a bit tiresome so
