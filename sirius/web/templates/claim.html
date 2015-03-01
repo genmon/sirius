@@ -3,6 +3,9 @@
 {% block title %}Overview{% endblock %}
 
 {% block page_content %}
+<div class="row">
+	<div class="col-md-8">
+
 <h1>Claim a printer</h1>
 <form method="POST">
 	{{ form.csrf_token }}
@@ -30,6 +33,9 @@
 		{% endif %}
 		{{ form.printer_name(class="form-control") }}
 	</div>
-	<button class="btn" type="submit">Claim printer</button>
+	<button class="btn btn-primary" type="submit">Claim printer</button>
 </form>
+
+</div>
+</div>
 {% endblock %}

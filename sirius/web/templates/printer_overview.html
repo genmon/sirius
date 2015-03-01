@@ -28,9 +28,10 @@
 		<h2>Recent messages</h2>
 
 		{% for m in messages %}
-		<p>
-			<img src="data:image/png;base64,{{ m.base64_pixels() }}" style="border: 1px solid black;width: 6cm;">
-			<br>
+		<div class="thumbnail" style="width: 300px;">
+			<img src="data:image/png;base64,{{ m.base64_pixels() }}" style="border: 1px solid #ccc; width: 100%;">
+			<div class="caption">
+			<p>
 			From @{{ m.sender.username }} at
 			{% if m.response_timestamp == None %}
 			<span class="bg-info">(still sending)</span>
@@ -41,7 +42,9 @@
 			<br>
 			Message failed: <span class="bg-danger">{{ m.failure_message }}</span>
 			{% endif %}
-		</p>
+			</p>
+			</div>
+		</div>
 		{% endfor %}
 		
 		{% endif %}
