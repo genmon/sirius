@@ -74,7 +74,7 @@ We'll have to enable vhost support explicitly in dokku 0.3.x.
 
 ```
 ssh root@${DO}
-echo lp > /home/dokku/sirius/VHOST
-echo lp > /home/dokku/HOSTNAME
+echo alpha.littleprinter.com > /home/dokku/sirius/VHOST
+echo alpha.littleprinter.com > /home/dokku/HOSTNAME
 dokku nginx:build-config sirius
 ```

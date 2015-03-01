@@ -33,6 +33,9 @@ class ClaimForm(flask_wtf.Form):
 class TwitterRefreshFriendsForm(flask_wtf.Form):
     "CSRF-only form."
 
+@blueprint.route('/about')
+def about():
+	return flask.render_template('about.html')
 
 @blueprint.route('/')
 def landing():

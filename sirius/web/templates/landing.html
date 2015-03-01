@@ -3,10 +3,11 @@
 {% block title %}Sirius - Index{% endblock %}
 
 {% block page_content %}
-<h1>Hello, World!</h1>
-
-<ul>
-	<a href="/twitter/login">login with twitter</a>
-</ul>
-
+<div class="jumbotron">
+	<h1>Little Printer</h1>
+	<p>Send messages to your printer, and to printers belonging to your Twitter friends.</p>
+	<p>Status: pre-pre-alpha. <a href="{{ url_for('landing.about') }}">(About.)</a></p>
+	<p>
+	<a role="button" class="btn btn-lg btn-primary" href="/twitter/login">Sign in with Twitter</a></p>
+</div>
 {% endblock %}

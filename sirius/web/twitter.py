@@ -42,6 +42,11 @@ def twitter_login():
     return twitter.authorize(callback=flask.url_for('twitter_oauth.oauth_authorized',
         next=flask.request.args.get('next') or flask.request.referrer or None))
 
+@blueprint.route('/twitter/logout')
+def twitter_logout():
+    flask.session.pop('user_id', None)
+    flask.flash('You were signed out')
+    return flask.redirect('/')
 
 @blueprint.route('/twitter/oauth-authorized')
 @twitter.authorized_handler
