@@ -5,7 +5,7 @@ First point your bridge at your laptop, port 5002 (or similar).
 Then run:
 
 ```console
-$ bin/gunicorn -k flask_sockets.worker sirius.server:app -b 0.0.0.0:5002 -w 1
+$ bin/gunicorn -k flask_sockets.worker manage:app -b 0.0.0.0:5002 -w 1
 ```
 
 Navigate browser to http://127.0.0.1:5002/
