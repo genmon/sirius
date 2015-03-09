@@ -16,6 +16,7 @@ from sirius.coding import encoders
 from sirius.coding import decoders
 from sirius import stats
 
+from sirius.models import user
 from sirius.models import hardware
 from sirius.models import messages as model_messages
 

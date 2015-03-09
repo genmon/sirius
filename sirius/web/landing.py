@@ -55,8 +55,6 @@ def overview():
 
     friends_printers = user.friends_printers()
 
-    # TODO - twitter friends refresh rate limiting.
-
     return flask.render_template(
         'overview.html',
         form=form,

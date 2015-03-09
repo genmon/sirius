@@ -41,6 +41,9 @@ class User(db.Model):
         """Claiming can happen before the printer "calls home" for the first
         time so we need to be able to deal with that."""
 
+        # TODO(tom): This method probably belongs to printer, not
+        # user. Move at some point.
+
         claim_code = claiming.canonicalize(claim_code)
 
         hcc = hardware.ClaimCode.query.filter_by(claim_code=claim_code).first()
