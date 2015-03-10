@@ -92,8 +92,10 @@ class User(db.Model):
 
     def signed_up_friends(self):
         """
+        A "friend" is someone this user follows on twitter.
+
         :returns: 2-tuple of (all friends, list of people who can print on
-                  my own printer)
+                  this user's printer)
         """
         friends = self.twitter_oauth.friends
         if not friends:
@@ -103,14 +105,20 @@ class User(db.Model):
 
     def friends_printers(self):
         """
-        :returns: List of printers I can print on.
+        :returns: List of printers this user can print on.
         """
-        _, signed_up_friends = self.signed_up_friends()
-        if not signed_up_friends:
+        sn = self.twitter_oauth.screen_name
+        reverse_friend_ids = [
+            x.user_id for x in TwitterOAuth.query.all()
+            for y in x.friends
+            if sn == y.screen_name]
+
+        # Avoid expensive sql by checking for list.
+        if not reverse_friend_ids:
             return []
-        owner_ids = [x.id for x in signed_up_friends]
+
         return hardware.Printer.query.filter(
-            hardware.Printer.owner_id.in_(owner_ids))
+            hardware.Printer.owner_id.in_(reverse_friend_ids))
 
 
 Friend = collections.namedtuple('Friend', 'screen_name name profile_image_url')
@@ -128,7 +136,7 @@ class TwitterOAuth(db.Model):
     # people DOS'ing our service we allow only one refresh per hour.
     last_friend_refresh = db.Column(db.DateTime)
 
-    # List of Friend objects (see named tuple above)
+    # List of Friend objects (see named tuple above this class)
     friends = db.Column(db.PickleType())
 
     def seconds_to_next_refresh(self, utcnow=None):
