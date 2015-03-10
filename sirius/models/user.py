@@ -107,6 +107,8 @@ class User(db.Model):
         """
         :returns: List of printers this user can print on.
         """
+        # TODO(tom): Querying the full database is O(N) and will not
+        # scale. Replace the model with a N:M relationship.
         sn = self.twitter_oauth.screen_name
         reverse_friend_ids = [
             x.user_id for x in TwitterOAuth.query.all()
