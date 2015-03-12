@@ -44,8 +44,7 @@ Created printer
   claim code: 5oop-e9dp-hh7v-fjqo
 ```
 
-Functionally there is no difference between resetting and creating a
-new printer so we don't distinguish between the two.
+Functionally there is no difference between resetting and creating a new printer so we don't distinguish between the two.
 
 To create a fake friend from twitter who signed up do this:
 
