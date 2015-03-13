@@ -112,7 +112,7 @@ class User(db.Model):
         sn = self.twitter_oauth.screen_name
         reverse_friend_ids = [
             x.user_id for x in TwitterOAuth.query.all()
-            for y in x.friends
+            for y in (x.friends or [])
             if sn == y.screen_name]
 
         # Avoid expensive sql by checking for list.
