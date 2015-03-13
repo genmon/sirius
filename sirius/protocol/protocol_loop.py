@@ -160,7 +160,7 @@ def _decoder_loop(ws):
     """
     while True:
         raw_data = ws.receive()
-        if raw_data == '':
+        if raw_data is None:
             break  # websocket closed by client
 
         try:
