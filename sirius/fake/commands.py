@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from flask.ext import script
 from sirius.models import hardware
@@ -33,12 +34,19 @@ def printer():
     db.session.add(printer)
     db.session.commit()
 
-    print('Created printer')
-    print('     address: {}'.format(device_address))
-    print('       DB id: {}'.format(printer.id))
-    print('      secret: {}'.format(secret))
-    print('         xor: {}'.format(xor))
-    print('  claim code: {}'.format(cc))
+    def out(x):
+        x.write('     address: {}\n'.format(device_address))
+        x.write('       DB id: {}\n'.format(printer.id))
+        x.write('      secret: {}\n'.format(secret))
+        x.write('         xor: {}\n'.format(xor))
+        x.write('  claim code: {}\n'.format(cc))
+
+    path = device_address + '.printer'
+    with open(path, 'w') as f:
+        out(f)
+
+    out(sys.stdout)
+    print('\nCreated printer and saved as {}'.format(path))
 
 
 @fake_manager.command
