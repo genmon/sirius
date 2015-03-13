@@ -11,6 +11,8 @@ import json
 import re
 import random
 import time
+import struct
+import base64
 
 from flask.ext import script
 
@@ -52,6 +54,13 @@ def heartbeat(ws):
             assert False # unreachable
 
 
+def _decode_binary(base64_data):
+    bdata = base64.b64decode(base64_data)
+    _, _, command, print_id, _, length = struct.unpack("<BBHIII", bdata[:16])
+
+    print("command", command, print_id, length)
+
+
 def _decode(data):
     try:
         data = json.loads(data)
@@ -67,6 +76,8 @@ def _decode(data):
     if data['type'] == 'DeviceCommand':
         payload = data['binary_payload']
         command_id = data['command_id']
+
+        _decode_binary(payload)
 
         # TODO(tom): Decode binary payload for debugging.
 
