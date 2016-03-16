@@ -9,16 +9,6 @@ BLACK = '\x00'
 THRESHOLD = 127
 TRANSLATE = [(1536, 255), (1152, 254), (768, 253), (384, 252), (251, 251)]
 
-
-def pixel_to_bw(p):
-    if p == (0, 0, 0, 0): # 0 alpha means white.
-        return WHITE
-    elif p[0] > THRESHOLD or p[1] > THRESHOLD or p[2] > THRESHOLD:
-        return WHITE
-    else:
-        return BLACK
-
-
 def ilen(i):
     "Returns length of an iterator in constant space."
     return sum(1 for _ in i)
@@ -56,15 +46,14 @@ def rle(lengths):
                     yield remainder
 
 
-def crop_384(im):
+def resize_384(im):
     w, h = im.size
-    return im.crop((0, 0, 384, min(h, 10000)))
-
+    resize_width  = 384
+    resize_height = resize_width * h / w 
+    return im.resize((resize_width, resize_height), Image.ANTIALIAS)
 
 def threshold(im):
-    thresholded = ''.join(pixel_to_bw(x) for x in im.convert('RGBA').getdata())
-    return Image.fromstring('L', im.size, thresholded)
-
+    return im.convert('1')
 
 def rle_from_bw(bw_image):
     """
@@ -133,5 +122,5 @@ def default_pipeline(html):
     """Encode HTML into an RLE image."""
     data = html_to_png(html)
     image = Image.open(data)
-    image = crop_384(image)
+    image = resize_384(image)
     return threshold(image)
