@@ -30,7 +30,7 @@ oauthlib==0.7.2
 psycopg2==2.5.4
 pycrypto==2.6.1
 redis==2.10.3
-requests==2.5.1
+requests==2.20.0
 requests-oauthlib==0.4.2
 selenium==2.43.0
 six==1.9.0
