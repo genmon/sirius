@@ -1,4 +1,4 @@
-Flask==0.10.1
+Flask==1.0
 Flask-Bootstrap==3.2.0.2
 Flask-Login==0.2.11
 Flask-Migrate==1.2.0
